@@ -6,7 +6,9 @@ import akka.event.Logging
 
 import scala.concurrent.duration.FiniteDuration
 
-abstract class RoleLeaderAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) extends CustomAutoDownBase(autoDownUnreachableAfter) {
+abstract class RoleLeaderAwareCustomAutoDownBase(
+    autoDownUnreachableAfter: FiniteDuration)
+    extends CustomAutoDownBase(autoDownUnreachableAfter) {
 
   private val log = Logging(context.system, this)
 
@@ -16,7 +18,7 @@ abstract class RoleLeaderAwareCustomAutoDownBase(autoDownUnreachableAfter: Finit
 
   def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {}
 
-  override def receiveEvent: Receive = {
+  override protected def receiveEvent: Receive = {
     case RoleLeaderChanged(role, leaderOption) =>
       roleLeader = roleLeader + (role -> leaderOption.contains(selfAddress))
       if (isRoleLeaderOf(role)) {
@@ -26,15 +28,15 @@ abstract class RoleLeaderAwareCustomAutoDownBase(autoDownUnreachableAfter: Finit
     case UnreachableMember(m) =>
       log.info("{} is unreachable", m)
       unreachableMember(m)
-    case ReachableMember(m)   =>
+    case ReachableMember(m) =>
       log.info("{} is reachable", m)
       remove(m)
-    case MemberRemoved(m, _)  =>
+    case MemberRemoved(m, _) =>
       log.info("{} was removed from the cluster", m)
       remove(m)
   }
 
-  override def initialize(state: CurrentClusterState): Unit = {
+  override protected def initialize(state: CurrentClusterState): Unit = {
     roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
     super.initialize(state)
   }

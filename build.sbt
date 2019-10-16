@@ -2,7 +2,9 @@ name := "akka-cluster-custom-downing"
 
 organization := "com.github.TanUkkii007"
 
-homepage := Some(url("https://github.com/TanUkkii007/akka-cluster-custom-downing"))
+homepage := Some(
+  url("https://github.com/TanUkkii007/akka-cluster-custom-downing")
+)
 
 scalaVersion := "2.13.0"
 
@@ -12,7 +14,8 @@ scalacOptions ++= Seq(
   "-feature",
   "-deprecation",
   "-unchecked",
-  "-encoding", "UTF-8",
+  "-encoding",
+  "UTF-8",
   "-language:implicitConversions",
   "-language:postfixOps",
   "-language:higherKinds"
@@ -28,7 +31,10 @@ libraryDependencies ++= Seq(
 //  "com.typesafe.akka" %% "akka-cluster" % akkaVersion  % "test" classifier "tests",
   "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaVersion % Test,
 //  "com.typesafe.akka" %% "akka-testkit" % akkaVersion  % "test" classifier "tests",
-  "org.scalatest" %% "scalatest" % "3.0.8" % Test
+  "org.scalatest" %% "scalatest" % "3.0.8" % Test,
+  "com.typesafe.akka" %% "akka-slf4j" % akkaVersion % Test,
+  "org.slf4j" % "slf4j-api" % "1.7.25" % Test,
+  "ch.qos.logback" % "logback-classic" % "1.2.3" % Test
 )
 
 compile in MultiJvm <<= (compile in MultiJvm) triggeredBy (compile in Test)
@@ -42,9 +48,11 @@ executeTests in Test <<= (executeTests in Test, executeTests in MultiJvm) map {
         multiNodeResults.overall
       else
         testResults.overall
-    Tests.Output(overall,
+    Tests.Output(
+      overall,
       testResults.events ++ multiNodeResults.events,
-      testResults.summaries ++ multiNodeResults.summaries)
+      testResults.summaries ++ multiNodeResults.summaries
+    )
 }
 
 configs(MultiJvm)

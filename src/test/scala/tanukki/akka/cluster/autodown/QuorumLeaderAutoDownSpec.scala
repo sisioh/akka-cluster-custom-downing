@@ -5,7 +5,6 @@
   * original source code is from
   * https://github.com/akka/akka/blob/master/akka-cluster/src/test/scala/akka/cluster/AutoDownSpec.scala
   */
-
 package tanukki.akka.cluster.autodown
 
 import akka.actor._
@@ -22,24 +21,34 @@ object QuorumLeaderAutoDownSpec {
   val memberRole = Set("testRole", "dc-1")
   val leaderRole: String = memberRole.head
 
-  val memberA = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, memberRole)
-  val memberB = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, memberRole)
-  val memberC = TestMember(Address("akka.tcp", "sys", "c", 2552), Up, memberRole)
-  val memberD = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, memberRole)
-  val memberE = TestMember(Address("akka.tcp", "sys", "e", 2552), Up, memberRole)
+  val memberA =
+    TestMember(Address("akka.tcp", "sys", "a", 2552), Up, memberRole)
+  val memberB =
+    TestMember(Address("akka.tcp", "sys", "b", 2552), Up, memberRole)
+  val memberC =
+    TestMember(Address("akka.tcp", "sys", "c", 2552), Up, memberRole)
+  val memberD =
+    TestMember(Address("akka.tcp", "sys", "d", 2552), Up, memberRole)
+  val memberE =
+    TestMember(Address("akka.tcp", "sys", "e", 2552), Up, memberRole)
 
-  val initialMembersByAge: SortedSet[Member] = immutable.SortedSet(memberA, memberB, memberC, memberD, memberE)(Member.ageOrdering)
+  val initialMembersByAge: SortedSet[Member] =
+    immutable.SortedSet(memberA, memberB, memberC, memberD, memberE)(
+      Member.ageOrdering)
 
   class QuorumLeaderAutoDownTestActor(address: Address,
                                       quorumRole: Option[String],
                                       autoDownUnreachableAfter: FiniteDuration,
-                                      probe:                    ActorRef)
-    extends QuorumLeaderAutoDownBase(quorumRole, 3, true, autoDownUnreachableAfter) {
+                                      probe: ActorRef)
+      extends QuorumLeaderAutoDownBase(quorumRole,
+                                       3,
+                                       true,
+                                       autoDownUnreachableAfter) {
 
-    override def selfAddress = address
-    override def scheduler: Scheduler = context.system.scheduler
+    override protected def selfAddress: Address = address
+    override protected def scheduler: Scheduler = context.system.scheduler
 
-    override def down(node: Address): Unit = {
+    override protected def down(node: Address): Unit = {
       if (isQuorumMet(quorumRole)) {
         if (quorumRole.fold(isLeader)(isRoleLeaderOf)) {
           probe ! DownCalled(node)
@@ -51,20 +60,32 @@ object QuorumLeaderAutoDownSpec {
       }
     }
 
-    override def shutdownSelf(): Unit = {
+    override protected def shutdownSelf(): Unit = {
       probe ! ShutDownCausedBySplitBrainResolver
     }
   }
 }
 
-class QuorumLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRolesSpec")) {
+class QuorumLeaderAutoDownSpec
+    extends AkkaSpec(ActorSystem("OldestAutoDownRolesSpec")) {
   import QuorumLeaderAutoDownSpec._
 
   def autoDownActor(autoDownUnreachableAfter: FiniteDuration): ActorRef =
-    system.actorOf(Props(new QuorumLeaderAutoDownTestActor(memberA.address, Some(leaderRole), autoDownUnreachableAfter, testActor)))
+    system.actorOf(
+      Props(
+        new QuorumLeaderAutoDownTestActor(memberA.address,
+                                          Some(leaderRole),
+                                          autoDownUnreachableAfter,
+                                          testActor)))
 
-  def autoDownActorOf(address: Address, autoDownUnreachableAfter: FiniteDuration): ActorRef =
-    system.actorOf(Props(new QuorumLeaderAutoDownTestActor(address, Some(leaderRole), autoDownUnreachableAfter, testActor)))
+  def autoDownActorOf(address: Address,
+                      autoDownUnreachableAfter: FiniteDuration): ActorRef =
+    system.actorOf(
+      Props(
+        new QuorumLeaderAutoDownTestActor(address,
+                                          Some(leaderRole),
+                                          autoDownUnreachableAfter,
+                                          testActor)))
 
   "QuorumLeaderAutoDown" must {
 

@@ -1,5 +1,5 @@
 package tanukki.akka.cluster.autodown
 
 trait SplitBrainResolver {
-  def shutdownSelf(): Unit
+  protected def shutdownSelf(): Unit
 }

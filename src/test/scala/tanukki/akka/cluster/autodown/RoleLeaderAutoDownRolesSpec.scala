@@ -5,7 +5,6 @@
   * original source code is from
   * https://github.com/akka/akka/blob/master/akka-cluster/src/test/scala/akka/cluster/AutoDownSpec.scala
   */
-
 package tanukki.akka.cluster.autodown
 
 import akka.actor._
@@ -15,7 +14,6 @@ import akka.cluster.MemberStatus.{Down, Exiting, Removed, Up}
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 
-
 object RoleLeaderAutoDownRolesSpec {
 
   val leaderRole = "leaderRole"
@@ -24,24 +22,32 @@ object RoleLeaderAutoDownRolesSpec {
   val leaderRoles = Set("leaderRole", dataCenterRole)
   val testRoles = Set(testRole, dataCenterRole)
 
-  val roleLeaderA = TestMember(Address("akka.tcp", "sys", "la", 2552), Up, leaderRoles)
-  val roleLeaderB = TestMember(Address("akka.tcp", "sys", "lb", 2552), Up, leaderRoles)
-  val roleLeaderC = TestMember(Address("akka.tcp", "sys", "lc", 2552), Up, leaderRoles)
+  val roleLeaderA =
+    TestMember(Address("akka.tcp", "sys", "la", 2552), Up, leaderRoles)
+  val roleLeaderB =
+    TestMember(Address("akka.tcp", "sys", "lb", 2552), Up, leaderRoles)
+  val roleLeaderC =
+    TestMember(Address("akka.tcp", "sys", "lc", 2552), Up, leaderRoles)
   val memberA = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, testRoles)
   val memberB = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, testRoles)
   val memberC = TestMember(Address("akka.tcp", "sys", "c", 2552), Up, testRoles)
-  val memberD = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, Set("otherRole", dataCenterRole))
+  val memberD = TestMember(Address("akka.tcp", "sys", "d", 2552),
+                           Up,
+                           Set("otherRole", dataCenterRole))
 
-  class RoleLeaderAutoDownRolesTestActor(leaderRole: String,
-                                         targetRoles:              Set[String],
-                                         autoDownUnreachableAfter: FiniteDuration,
-                                         probe:                    ActorRef)
-    extends RoleLeaderAutoDownRolesBase(leaderRole, targetRoles, autoDownUnreachableAfter) {
+  class RoleLeaderAutoDownRolesTestActor(
+      leaderRole: String,
+      targetRoles: Set[String],
+      autoDownUnreachableAfter: FiniteDuration,
+      probe: ActorRef)
+      extends RoleLeaderAutoDownRolesBase(leaderRole,
+                                          targetRoles,
+                                          autoDownUnreachableAfter) {
 
-    override def selfAddress = roleLeaderA.address
-    override def scheduler: Scheduler = context.system.scheduler
+    override protected def selfAddress: Address = roleLeaderA.address
+    override protected def scheduler: Scheduler = context.system.scheduler
 
-    override def down(node: Address): Unit = {
+    override protected def down(node: Address): Unit = {
       if (isRoleLeaderOf(leaderRole))
         probe ! DownCalled(node)
       else
@@ -51,11 +57,17 @@ object RoleLeaderAutoDownRolesSpec {
   }
 }
 
-class RoleLeaderAutoDownRolesSpec extends AkkaSpec(ActorSystem("LeaderAutoDownRolesSpec")) {
+class RoleLeaderAutoDownRolesSpec
+    extends AkkaSpec(ActorSystem("LeaderAutoDownRolesSpec")) {
   import RoleLeaderAutoDownRolesSpec._
 
   def autoDownActor(autoDownUnreachableAfter: FiniteDuration): ActorRef =
-    system.actorOf(Props(classOf[RoleLeaderAutoDownRolesTestActor], leaderRole, Set(testRole), autoDownUnreachableAfter, testActor))
+    system.actorOf(
+      Props(classOf[RoleLeaderAutoDownRolesTestActor],
+            leaderRole,
+            Set(testRole),
+            autoDownUnreachableAfter,
+            testActor))
 
   "RoleLeaderAutoDownRoles" must {
 

@@ -7,7 +7,8 @@ import com.typesafe.config.Config
 import scala.collection.JavaConverters._
 import scala.concurrent.duration.{FiniteDuration, _}
 
-final class LeaderAutoDowningRoles(system: ActorSystem) extends DowningProvider {
+final class LeaderAutoDowningRoles(system: ActorSystem)
+    extends DowningProvider {
 
   private[this] val cluster = Cluster(system)
 
@@ -22,21 +23,31 @@ final class LeaderAutoDowningRoles(system: ActorSystem) extends DowningProvider 
   }
 
   override def downingActorProps: Option[Props] = {
-    val stableAfter = system.settings.config.getDuration("custom-downing.stable-after").toMillis millis
-    val roles = system.settings.config.getStringList("custom-downing.leader-auto-downing-roles.target-roles").asScala.toSet
-    if (roles.isEmpty) None else Some(LeaderAutoDownRoles.props(roles, stableAfter))
+    val stableAfter = system.settings.config
+      .getDuration("custom-downing.stable-after")
+      .toMillis millis
+    val roles = system.settings.config
+      .getStringList("custom-downing.leader-auto-downing-roles.target-roles")
+      .asScala
+      .toSet
+    if (roles.isEmpty) None
+    else Some(LeaderAutoDownRoles.props(roles, stableAfter))
   }
 }
 
-
 private[autodown] object LeaderAutoDownRoles {
-  def props(targetRoles: Set[String], autoDownUnreachableAfter: FiniteDuration): Props = Props(classOf[LeaderAutoDownRoles], targetRoles, autoDownUnreachableAfter)
+  def props(targetRoles: Set[String],
+            autoDownUnreachableAfter: FiniteDuration): Props =
+    Props(new LeaderAutoDownRoles(targetRoles, autoDownUnreachableAfter))
 }
 
-private[autodown] class LeaderAutoDownRoles(targetRoles: Set[String], autoDownUnreachableAfter: FiniteDuration)
-  extends LeaderAutoDownRolesBase(targetRoles, autoDownUnreachableAfter) with ClusterCustomDowning {
+private[autodown] class LeaderAutoDownRoles(
+  targetRoles: Set[String],
+  autoDownUnreachableAfter: FiniteDuration
+) extends LeaderAutoDownRolesBase(targetRoles, autoDownUnreachableAfter)
+    with ClusterCustomDowning {
 
-  override def down(node: Address): Unit = {
+  override protected def down(node: Address): Unit = {
     log.info("Leader is auto-downing unreachable node [{}]", node)
     cluster.down(node)
   }

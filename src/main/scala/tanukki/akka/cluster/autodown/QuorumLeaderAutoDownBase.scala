@@ -6,21 +6,26 @@ import akka.cluster.MemberStatus.Down
 
 import scala.concurrent.duration.FiniteDuration
 
-abstract class QuorumLeaderAutoDownBase(quorumRole: Option[String], quorumSize: Int, downIfOutOfQuorum: Boolean, autoDownUnreachableAfter: FiniteDuration)
-  extends QuorumAwareCustomAutoDownBase(quorumSize, autoDownUnreachableAfter) {
+abstract class QuorumLeaderAutoDownBase(
+    quorumRole: Option[String],
+    quorumSize: Int,
+    downIfOutOfQuorum: Boolean,
+    autoDownUnreachableAfter: FiniteDuration)
+    extends QuorumAwareCustomAutoDownBase(quorumSize, autoDownUnreachableAfter) {
 
-  override def onLeaderChanged(leader: Option[Address]): Unit = {
+  override protected def onLeaderChanged(leader: Option[Address]): Unit = {
     if (quorumRole.isEmpty && isLeader) downPendingUnreachableMembers()
   }
 
-  override def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {
+  override protected def onRoleLeaderChanged(role: String,
+                                             leader: Option[Address]): Unit = {
     quorumRole.foreach { r =>
       if (r == role && isRoleLeaderOf(r)) downPendingUnreachableMembers()
     }
   }
 
-
-  override def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
+  override protected def onMemberRemoved(member: Member,
+                                         previousStatus: MemberStatus): Unit = {
     if (isQuorumMet(quorumRole)) {
       if (isLeaderOf(quorumRole)) {
         downPendingUnreachableMembers()
@@ -31,7 +36,7 @@ abstract class QuorumLeaderAutoDownBase(quorumRole: Option[String], quorumSize: 
     super.onMemberRemoved(member, previousStatus)
   }
 
-  override def downOrAddPending(member: Member): Unit = {
+  override protected def downOrAddPending(member: Member): Unit = {
     if (isLeaderOf(quorumRole)) {
       down(member.address)
       replaceMember(member.copy(Down))
@@ -40,7 +45,7 @@ abstract class QuorumLeaderAutoDownBase(quorumRole: Option[String], quorumSize: 
     }
   }
 
-  override def downOrAddPendingAll(members: Set[Member]): Unit = {
+  override protected def downOrAddPendingAll(members: Set[Member]): Unit = {
     if (isQuorumMetAfterDown(members, quorumRole)) {
       members.foreach(downOrAddPending)
     } else if (downIfOutOfQuorum) {

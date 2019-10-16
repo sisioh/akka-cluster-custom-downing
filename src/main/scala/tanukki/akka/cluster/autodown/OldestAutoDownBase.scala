@@ -1,35 +1,61 @@
 package tanukki.akka.cluster.autodown
 
 import akka.cluster.MemberStatus.Down
-import akka.cluster.{MemberStatus, Member}
+import akka.cluster.{Member, MemberStatus}
+import akka.event.Logging
 
 import scala.concurrent.duration.FiniteDuration
 
-abstract class OldestAutoDownBase(oldestMemberRole: Option[String], downIfAlone: Boolean, autoDownUnreachableAfter: FiniteDuration)
-  extends OldestAwareCustomAutoDownBase(autoDownUnreachableAfter){
+abstract class OldestAutoDownBase(oldestMemberRole: Option[String],
+                                  downIfAlone: Boolean,
+                                  autoDownUnreachableAfter: FiniteDuration)
+    extends OldestAwareCustomAutoDownBase(autoDownUnreachableAfter) {
 
-  override def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
-    if (isOldestOf(oldestMemberRole))
+  private val log = Logging(context.system, this)
+
+  override def onMemberDowned(member: Member): Unit = {
+    log.info(s"onMemberDowned:start $member")
+    if (isAllIntermediateMemberRemovedOnlyExiting && isOldestUnsafe(
+          oldestMemberRole
+        ))
       downPendingUnreachableMembers()
+    log.info(s"onMemberDowned:finished $member")
   }
 
-  override def downOrAddPending(member: Member): Unit = {
+  override protected def onMemberRemoved(member: Member,
+                                         previousStatus: MemberStatus): Unit = {
+    log.info(s"onMemberRemoved:start $member, $previousStatus")
+    if (isAllIntermediateMemberRemoved && isOldestUnsafe(oldestMemberRole))
+      downPendingUnreachableMembers()
+    log.info(s"onMemberRemoved:finish $member, $previousStatus")
+  }
+
+  override protected def downOrAddPending(member: Member): Unit = {
+    log.debug(s"downOrAddPending:start $member, $oldestMemberRole")
     if (isOldestOf(oldestMemberRole)) {
+      log.debug(s"isOldestOf = true :$member")
+      log.debug(s"---> down(${member.address})")
       down(member.address)
       replaceMember(member.copy(Down))
     } else {
+      log.debug(s"isOldestOf = false :$member")
+      log.debug(s"+++> down pending")
       pendingAsUnreachable(member)
     }
+    log.debug(s"downOrAddPending:finish $member")
   }
 
-  def downOnSecondary(member: Member): Unit = {
+  protected def downOnSecondary(member: Member): Unit = {
+    log.debug(s"downOnSecondary:start $member")
     if (isSecondaryOldest(oldestMemberRole)) {
       down(member.address)
       replaceMember(member.copy(Down))
     }
+    log.debug(s"downOnSecondary:finish $member")
   }
 
-  override def downOrAddPendingAll(members: Set[Member]): Unit = {
+  override protected def downOrAddPendingAll(members: Set[Member]): Unit = {
+    log.debug(s"downOrAddPendingAll:start $members")
     val oldest = oldestMember(oldestMemberRole)
     if (downIfAlone && isOldestAlone(oldestMemberRole)) {
       if (isOldestOf(oldestMemberRole)) {
@@ -46,19 +72,25 @@ abstract class OldestAutoDownBase(oldestMemberRole: Option[String], downIfAlone:
         members.foreach(downOrAddPending)
       }
     }
+    log.debug(s"downOrAddPendingAll:finish $members")
   }
 
-  def downAloneOldest(member: Member): Unit = {
-    val oldest = oldestMember(oldestMemberRole)
+  protected def downAloneOldest(member: Member): Unit = {
+    log.debug(s"downAloneOldest:start $member")
+    val oldestOpt = oldestMember(oldestMemberRole)
     if (isOldestOf(oldestMemberRole)) {
       shutdownSelf()
-    } else if (isSecondaryOldest(oldestMemberRole) && oldest.contains(member)) {
-      oldest.foreach { m =>
-        down(m.address)
-        replaceMember(m.copy(Down))
+    } else if (isSecondaryOldest(oldestMemberRole) && oldestOpt.contains(
+                 member
+               )) {
+      oldestOpt.foreach { oldest =>
+        log.debug(s"---> down($oldest)")
+        down(oldest.address)
+        replaceMember(oldest.copy(Down))
       }
     } else {
       pendingAsUnreachable(member)
     }
+    log.debug(s"downAloneOldest:finish $member")
   }
 }

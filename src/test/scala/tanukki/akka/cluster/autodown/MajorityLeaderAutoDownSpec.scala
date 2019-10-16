@@ -5,7 +5,6 @@
   * original source code is from
   * https://github.com/akka/akka/blob/master/akka-cluster/src/test/scala/akka/cluster/AutoDownSpec.scala
   */
-
 package tanukki.akka.cluster.autodown
 
 import akka.actor._
@@ -28,18 +27,23 @@ object MajorityLeaderAutoDownSpec {
   val memberD = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, testRole)
   val memberE = TestMember(Address("akka.tcp", "sys", "e", 2552), Up, testRole)
 
-  val initialMembersByAddress: SortedSet[Member] = immutable.SortedSet(memberA, memberB, memberC, memberD, memberE)(Member.ordering)
+  val initialMembersByAddress: SortedSet[Member] =
+    immutable.SortedSet(memberA, memberB, memberC, memberD, memberE)(
+      Member.ordering)
 
-  class MajorityLeaderAutoDownTestActor(address: Address,
-                                        majorityRole: Option[String],
-                                        autoDownUnreachableAfter: FiniteDuration,
-                                        probe: ActorRef)
-      extends MajorityLeaderAutoDownBase(majorityRole, true, autoDownUnreachableAfter) {
+  class MajorityLeaderAutoDownTestActor(
+      address: Address,
+      majorityRole: Option[String],
+      autoDownUnreachableAfter: FiniteDuration,
+      probe: ActorRef)
+      extends MajorityLeaderAutoDownBase(majorityRole,
+                                         true,
+                                         autoDownUnreachableAfter) {
 
-    override def selfAddress = address
-    override def scheduler: Scheduler = context.system.scheduler
+    override protected def selfAddress: Address = address
+    override protected def scheduler: Scheduler = context.system.scheduler
 
-    override def down(node: Address): Unit = {
+    override protected def down(node: Address): Unit = {
       if (isMajority(majorityRole)) {
         if (majorityRole.fold(isLeader)(isRoleLeaderOf)) {
           probe ! DownCalled(node)
@@ -51,20 +55,32 @@ object MajorityLeaderAutoDownSpec {
       }
     }
 
-    override def shutdownSelf(): Unit = {
+    override protected def shutdownSelf(): Unit = {
       probe ! ShutDownCausedBySplitBrainResolver
     }
   }
 }
 
-class MajorityLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRolesSpec")) {
+class MajorityLeaderAutoDownSpec
+    extends AkkaSpec(ActorSystem("OldestAutoDownRolesSpec")) {
   import MajorityLeaderAutoDownSpec._
 
   def autoDownActor(autoDownUnreachableAfter: FiniteDuration): ActorRef =
-    system.actorOf(Props(new MajorityLeaderAutoDownTestActor(memberA.address, Some(leaderRole), autoDownUnreachableAfter, testActor)))
+    system.actorOf(
+      Props(
+        new MajorityLeaderAutoDownTestActor(memberA.address,
+                                            Some(leaderRole),
+                                            autoDownUnreachableAfter,
+                                            testActor)))
 
-  def autoDownActorOf(address: Address, autoDownUnreachableAfter: FiniteDuration): ActorRef =
-    system.actorOf(Props(new MajorityLeaderAutoDownTestActor(address, Some(leaderRole), autoDownUnreachableAfter, testActor)))
+  def autoDownActorOf(address: Address,
+                      autoDownUnreachableAfter: FiniteDuration): ActorRef =
+    system.actorOf(
+      Props(
+        new MajorityLeaderAutoDownTestActor(address,
+                                            Some(leaderRole),
+                                            autoDownUnreachableAfter,
+                                            testActor)))
 
   "MajorityLeaderAutoDown" must {
 
@@ -175,7 +191,7 @@ class MajorityLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRol
       a ! UnreachableMember(memberC)
       expectNoMessage(2.second)
       expectMsgAllOf(DownCalled(memberB.address), DownCalled(memberC.address))
-     }
+    }
 
     "down self when quorum is NOT met via unreachable" in {
       val a = autoDownActor(2.seconds)

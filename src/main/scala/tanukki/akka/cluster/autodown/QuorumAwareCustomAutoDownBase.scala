@@ -9,17 +9,21 @@ import scala.collection.immutable
 import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.FiniteDuration
 
-abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachableAfter: FiniteDuration)
-  extends CustomAutoDownBase(autoDownUnreachableAfter) with SplitBrainResolver {
+abstract class QuorumAwareCustomAutoDownBase(
+    quorumSize: Int,
+    autoDownUnreachableAfter: FiniteDuration)
+    extends CustomAutoDownBase(autoDownUnreachableAfter)
+    with SplitBrainResolver {
 
   private val log = Logging(context.system, this)
 
   private var leader = false
   private var roleLeader: Map[String, Boolean] = Map.empty
 
-  private var membersByAge: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ageOrdering)
+  private var membersByAge: immutable.SortedSet[Member] =
+    immutable.SortedSet.empty(Member.ageOrdering)
 
-  def receiveEvent = {
+  def receiveEvent: PartialFunction[Any, Unit] = {
     case LeaderChanged(leaderOption) =>
       leader = leaderOption.contains(selfAddress)
       if (isLeader) {
@@ -49,29 +53,33 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
     case MemberExited(m) =>
       log.info("{} exited from the cluster", m)
       replaceMember(m)
-    case MemberRemoved(m, prev)  =>
+    case MemberRemoved(m, prev) =>
       log.info("{} was removed from the cluster", m)
       remove(m)
       removeMember(m)
       onMemberRemoved(m, prev)
   }
 
-  def isLeader: Boolean = leader
+  protected def isLeader: Boolean = leader
 
-  def isRoleLeaderOf(role: String): Boolean = roleLeader.getOrElse(role, false)
+  protected def isRoleLeaderOf(role: String): Boolean =
+    roleLeader.getOrElse(role, false)
 
-  def onLeaderChanged(leader: Option[Address]): Unit = {}
+  protected def onLeaderChanged(leader: Option[Address]): Unit = {}
 
-  def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {}
+  protected def onRoleLeaderChanged(role: String,
+                                    leader: Option[Address]): Unit = {}
 
-  def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {}
+  protected def onMemberRemoved(member: Member,
+                                previousStatus: MemberStatus): Unit = {}
 
-  override def initialize(state: CurrentClusterState): Unit = {
+  override protected def initialize(state: CurrentClusterState): Unit = {
     leader = state.leader.exists(_ == selfAddress)
     roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
-    membersByAge = immutable.SortedSet.empty(Member.ageOrdering) union state.members.filterNot {m =>
-      m.status == MemberStatus.Removed
-    }
+    membersByAge = immutable.SortedSet.empty(Member.ageOrdering) union state.members
+      .filterNot { m =>
+        m.status == MemberStatus.Removed
+      }
     super.initialize(state)
   }
 
@@ -84,11 +92,12 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
     membersByAge -= member
   }
 
-  def isLeaderOf(quorumRole: Option[String]): Boolean = quorumRole.fold(isLeader)(isRoleLeaderOf)
+  def isLeaderOf(quorumRole: Option[String]): Boolean =
+    quorumRole.fold(isLeader)(isRoleLeaderOf)
 
   def targetMember: SortedSet[Member] = membersByAge.filter { m =>
     (m.status == MemberStatus.Up || m.status == MemberStatus.Leaving) &&
-      !pendingUnreachableMembers.contains(m)
+    !pendingUnreachableMembers.contains(m)
   }
 
   def quorumMemberOf(role: Option[String]): SortedSet[Member] = {
@@ -102,10 +111,12 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
   }
 
   def isQuorumMetAfterDown(members: Set[Member], role: Option[String]) = {
-    val minus = if (role.isEmpty) members.size else {
-      val r = role.get
-      members.count(_.hasRole(r))
-    }
+    val minus =
+      if (role.isEmpty) members.size
+      else {
+        val r = role.get
+        members.count(_.hasRole(r))
+      }
     val ms = quorumMemberOf(role)
     ms.size - minus >= quorumSize
   }

@@ -6,20 +6,25 @@ import akka.cluster.{MemberStatus, Member}
 
 import scala.concurrent.duration.FiniteDuration
 
-abstract class MajorityLeaderAutoDownBase(majorityMemberRole: Option[String], downIfInMinority: Boolean, autoDownUnreachableAfter: FiniteDuration)
-    extends MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter) {
+abstract class MajorityLeaderAutoDownBase(
+  majorityMemberRole: Option[String],
+  downIfInMinority: Boolean,
+  autoDownUnreachableAfter: FiniteDuration
+) extends MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter) {
 
-  override def onLeaderChanged(leader: Option[Address]): Unit = {
+  override protected def onLeaderChanged(leader: Option[Address]): Unit = {
     if (majorityMemberRole.isEmpty && isLeader) downPendingUnreachableMembers()
   }
 
-  override def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {
+  override protected def onRoleLeaderChanged(role: String,
+                                             leader: Option[Address]): Unit = {
     majorityMemberRole.foreach { r =>
       if (r == role && isRoleLeaderOf(r)) downPendingUnreachableMembers()
     }
   }
 
-  override def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
+  override protected def onMemberRemoved(member: Member,
+                                         previousStatus: MemberStatus): Unit = {
     if (isMajority(majorityMemberRole)) {
       if (isLeaderOf(majorityMemberRole)) {
         downPendingUnreachableMembers()
@@ -30,7 +35,7 @@ abstract class MajorityLeaderAutoDownBase(majorityMemberRole: Option[String], do
     super.onMemberRemoved(member, previousStatus)
   }
 
-  override def downOrAddPending(member: Member): Unit = {
+  override protected def downOrAddPending(member: Member): Unit = {
     if (isLeaderOf(majorityMemberRole)) {
       down(member.address)
       replaceMember(member.copy(Down))
@@ -39,7 +44,7 @@ abstract class MajorityLeaderAutoDownBase(majorityMemberRole: Option[String], do
     }
   }
 
-  override def downOrAddPendingAll(members: Set[Member]): Unit = {
+  override protected def downOrAddPendingAll(members: Set[Member]): Unit = {
     if (isMajorityAfterDown(members, majorityMemberRole)) {
       members.foreach(downOrAddPending)
     } else if (downIfInMinority) {
