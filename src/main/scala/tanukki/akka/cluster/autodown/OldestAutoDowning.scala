@@ -1,8 +1,8 @@
 package tanukki.akka.cluster.autodown
 
 import akka.ConfigurationException
-import akka.actor.{ActorSystem, Address, Props}
-import akka.cluster.{Cluster, DowningProvider}
+import akka.actor.{ ActorSystem, Address, Props }
+import akka.cluster.{ Cluster, DowningProvider }
 import com.typesafe.config.Config
 
 import scala.concurrent.Await
@@ -29,8 +29,10 @@ class OldestAutoDowning(system: ActorSystem) extends DowningProvider {
       if (r.isEmpty) None else Some(r)
     }
     val downIfAlone = system.settings.config.getBoolean("custom-downing.oldest-auto-downing.down-if-alone")
-    val shutdownActorSystem = system.settings.config.getBoolean("custom-downing.oldest-auto-downing.shutdown-actor-system-on-resolution")
-    if (stableAfter == Duration.Zero && downIfAlone) throw new ConfigurationException("If you set down-if-alone=true, stable-after timeout must be greater than zero.")
+    val shutdownActorSystem =
+      system.settings.config.getBoolean("custom-downing.oldest-auto-downing.shutdown-actor-system-on-resolution")
+    if (stableAfter == Duration.Zero && downIfAlone)
+      throw new ConfigurationException("If you set down-if-alone=true, stable-after timeout must be greater than zero.")
     else {
       Some(OldestAutoDown.props(oldestMemberRole, downIfAlone, shutdownActorSystem, stableAfter))
     }
@@ -38,12 +40,23 @@ class OldestAutoDowning(system: ActorSystem) extends DowningProvider {
 }
 
 private[autodown] object OldestAutoDown {
-  def props(oldestMemberRole: Option[String], downIfAlone: Boolean, shutdownActorSystem: Boolean, autoDownUnreachableAfter: FiniteDuration): Props =
+
+  def props(
+      oldestMemberRole: Option[String],
+      downIfAlone: Boolean,
+      shutdownActorSystem: Boolean,
+      autoDownUnreachableAfter: FiniteDuration
+  ): Props =
     Props(classOf[OldestAutoDown], oldestMemberRole, downIfAlone, shutdownActorSystem, autoDownUnreachableAfter)
 }
 
-private[autodown] class OldestAutoDown(oldestMemberRole: Option[String], downIfAlone: Boolean, shutdownActorSystem: Boolean, autoDownUnreachableAfter: FiniteDuration)
-  extends OldestAutoDownBase(oldestMemberRole, downIfAlone, autoDownUnreachableAfter) with ClusterCustomDowning {
+private[autodown] class OldestAutoDown(
+    oldestMemberRole: Option[String],
+    downIfAlone: Boolean,
+    shutdownActorSystem: Boolean,
+    autoDownUnreachableAfter: FiniteDuration
+) extends OldestAutoDownBase(oldestMemberRole, downIfAlone, autoDownUnreachableAfter)
+    with ClusterCustomDowning {
 
   override def down(node: Address): Unit = {
     log.info("Oldest is auto-downing unreachable node [{}]", node)

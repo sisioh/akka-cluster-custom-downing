@@ -2,7 +2,7 @@ package tanukki.akka.cluster.autodown
 
 import akka.actor.Address
 import akka.cluster.ClusterEvent._
-import akka.cluster.{Member, MemberStatus}
+import akka.cluster.{ Member, MemberStatus }
 import akka.event.Logging
 
 import scala.collection.immutable
@@ -10,11 +10,12 @@ import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.FiniteDuration
 
 abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachableAfter: FiniteDuration)
-  extends CustomAutoDownBase(autoDownUnreachableAfter) with SplitBrainResolver {
+    extends CustomAutoDownBase(autoDownUnreachableAfter)
+    with SplitBrainResolver {
 
   private val log = Logging(context.system, this)
 
-  private var leader = false
+  private var leader                           = false
   private var roleLeader: Map[String, Boolean] = Map.empty
 
   private var membersByAge: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ageOrdering)
@@ -49,7 +50,7 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
     case MemberExited(m) =>
       log.info("{} exited from the cluster", m)
       replaceMember(m)
-    case MemberRemoved(m, prev)  =>
+    case MemberRemoved(m, prev) =>
       log.info("{} was removed from the cluster", m)
       remove(m)
       removeMember(m)
@@ -69,9 +70,9 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
   override def initialize(state: CurrentClusterState): Unit = {
     leader = state.leader.exists(_ == selfAddress)
     roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
-    membersByAge = immutable.SortedSet.empty(Member.ageOrdering) union state.members.filterNot {m =>
-      m.status == MemberStatus.Removed
-    }
+    membersByAge = immutable.SortedSet.empty(Member.ageOrdering) union state.members.filterNot { m =>
+        m.status == MemberStatus.Removed
+      }
     super.initialize(state)
   }
 
@@ -88,7 +89,7 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
 
   def targetMember: SortedSet[Member] = membersByAge.filter { m =>
     (m.status == MemberStatus.Up || m.status == MemberStatus.Leaving) &&
-      !pendingUnreachableMembers.contains(m)
+    !pendingUnreachableMembers.contains(m)
   }
 
   def quorumMemberOf(role: Option[String]): SortedSet[Member] = {
@@ -102,10 +103,12 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
   }
 
   def isQuorumMetAfterDown(members: Set[Member], role: Option[String]) = {
-    val minus = if (role.isEmpty) members.size else {
-      val r = role.get
-      members.count(_.hasRole(r))
-    }
+    val minus =
+      if (role.isEmpty) members.size
+      else {
+        val r = role.get
+        members.count(_.hasRole(r))
+      }
     val ms = quorumMemberOf(role)
     ms.size - minus >= quorumSize
   }

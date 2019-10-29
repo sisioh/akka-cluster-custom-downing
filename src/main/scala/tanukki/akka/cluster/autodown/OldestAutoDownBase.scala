@@ -1,12 +1,15 @@
 package tanukki.akka.cluster.autodown
 
 import akka.cluster.MemberStatus.Down
-import akka.cluster.{MemberStatus, Member}
+import akka.cluster.{ Member, MemberStatus }
 
 import scala.concurrent.duration.FiniteDuration
 
-abstract class OldestAutoDownBase(oldestMemberRole: Option[String], downIfAlone: Boolean, autoDownUnreachableAfter: FiniteDuration)
-  extends OldestAwareCustomAutoDownBase(autoDownUnreachableAfter){
+abstract class OldestAutoDownBase(
+    oldestMemberRole: Option[String],
+    downIfAlone: Boolean,
+    autoDownUnreachableAfter: FiniteDuration
+) extends OldestAwareCustomAutoDownBase(autoDownUnreachableAfter) {
 
   override def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
     if (isOldestOf(oldestMemberRole))

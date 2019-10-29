@@ -8,11 +8,11 @@
 
 package tanukki.akka.cluster.autodown
 
-import akka.actor.{Cancellable, Scheduler, Address, Actor}
+import akka.actor.{ Actor, Address, Cancellable, Scheduler }
 import akka.cluster.ClusterEvent._
-import akka.cluster.MemberStatus.{Exiting, Down}
+import akka.cluster.MemberStatus.{ Down, Exiting }
 import akka.cluster._
-import scala.concurrent.duration.{Duration, FiniteDuration}
+import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 object CustomDowning {
   case class UnreachableTimeout(member: Member)
@@ -37,8 +37,8 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
   val skipMemberStatus = Set[MemberStatus](Down, Exiting)
 
   private var scheduledUnreachable: Map[Member, Cancellable] = Map.empty
-  private var pendingUnreachable: Set[Member] = Set.empty
-  private var unstableUnreachable: Set[Member] = Set.empty
+  private var pendingUnreachable: Set[Member]                = Set.empty
+  private var unstableUnreachable: Set[Member]               = Set.empty
 
   override def postStop(): Unit = {
     scheduledUnreachable.values foreach { _.cancel }

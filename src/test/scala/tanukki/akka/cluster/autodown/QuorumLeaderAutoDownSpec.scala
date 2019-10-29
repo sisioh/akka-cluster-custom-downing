@@ -11,15 +11,15 @@ package tanukki.akka.cluster.autodown
 import akka.actor._
 import akka.cluster.ClusterEvent._
 import akka.cluster.MemberStatus._
-import akka.cluster.{Member, TestMember}
+import akka.cluster.{ Member, TestMember }
 
 import scala.collection.immutable
 import scala.collection.immutable.SortedSet
-import scala.concurrent.duration.{Duration, FiniteDuration}
+import scala.concurrent.duration.{ Duration, FiniteDuration }
 import scala.concurrent.duration._
 
 object QuorumLeaderAutoDownSpec {
-  val memberRole = Set("testRole", "dc-1")
+  val memberRole         = Set("testRole", "dc-1")
   val leaderRole: String = memberRole.head
 
   val memberA = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, memberRole)
@@ -28,15 +28,17 @@ object QuorumLeaderAutoDownSpec {
   val memberD = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, memberRole)
   val memberE = TestMember(Address("akka.tcp", "sys", "e", 2552), Up, memberRole)
 
-  val initialMembersByAge: SortedSet[Member] = immutable.SortedSet(memberA, memberB, memberC, memberD, memberE)(Member.ageOrdering)
+  val initialMembersByAge: SortedSet[Member] =
+    immutable.SortedSet(memberA, memberB, memberC, memberD, memberE)(Member.ageOrdering)
 
-  class QuorumLeaderAutoDownTestActor(address: Address,
-                                      quorumRole: Option[String],
-                                      autoDownUnreachableAfter: FiniteDuration,
-                                      probe:                    ActorRef)
-    extends QuorumLeaderAutoDownBase(quorumRole, 3, true, autoDownUnreachableAfter) {
+  class QuorumLeaderAutoDownTestActor(
+      address: Address,
+      quorumRole: Option[String],
+      autoDownUnreachableAfter: FiniteDuration,
+      probe: ActorRef
+  ) extends QuorumLeaderAutoDownBase(quorumRole, 3, true, autoDownUnreachableAfter) {
 
-    override def selfAddress = address
+    override def selfAddress          = address
     override def scheduler: Scheduler = context.system.scheduler
 
     override def down(node: Address): Unit = {
@@ -61,10 +63,14 @@ class QuorumLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRoles
   import QuorumLeaderAutoDownSpec._
 
   def autoDownActor(autoDownUnreachableAfter: FiniteDuration): ActorRef =
-    system.actorOf(Props(new QuorumLeaderAutoDownTestActor(memberA.address, Some(leaderRole), autoDownUnreachableAfter, testActor)))
+    system.actorOf(
+      Props(new QuorumLeaderAutoDownTestActor(memberA.address, Some(leaderRole), autoDownUnreachableAfter, testActor))
+    )
 
   def autoDownActorOf(address: Address, autoDownUnreachableAfter: FiniteDuration): ActorRef =
-    system.actorOf(Props(new QuorumLeaderAutoDownTestActor(address, Some(leaderRole), autoDownUnreachableAfter, testActor)))
+    system.actorOf(
+      Props(new QuorumLeaderAutoDownTestActor(address, Some(leaderRole), autoDownUnreachableAfter, testActor))
+    )
 
   "QuorumLeaderAutoDown" must {
 

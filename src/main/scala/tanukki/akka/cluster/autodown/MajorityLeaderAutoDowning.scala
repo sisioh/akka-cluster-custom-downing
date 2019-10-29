@@ -1,7 +1,7 @@
 package tanukki.akka.cluster.autodown
 
-import akka.actor.{ActorSystem, Address, Props}
-import akka.cluster.{Cluster, DowningProvider}
+import akka.actor.{ ActorSystem, Address, Props }
+import akka.cluster.{ Cluster, DowningProvider }
 import com.typesafe.config.Config
 
 import scala.concurrent.Await
@@ -28,18 +28,36 @@ class MajorityLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
       if (r.isEmpty) None else Some(r)
     }
     val downIfInMinority = config.getBoolean("custom-downing.majority-leader-auto-downing.down-if-in-minority")
-    val shutdownActorSystem = config.getBoolean("custom-downing.majority-leader-auto-downing.shutdown-actor-system-on-resolution")
+    val shutdownActorSystem =
+      config.getBoolean("custom-downing.majority-leader-auto-downing.shutdown-actor-system-on-resolution")
     Some(MajorityLeaderAutoDown.props(majorityMemberRole, downIfInMinority, shutdownActorSystem, stableAfter))
   }
 }
 
 private[autodown] object MajorityLeaderAutoDown {
-  def props(majorityMemberRole: Option[String], downIfInMinority: Boolean, shutdownActorSystem: Boolean, autoDownUnreachableAfter: FiniteDuration): Props =
-    Props(classOf[MajorityLeaderAutoDown], majorityMemberRole, downIfInMinority, shutdownActorSystem, autoDownUnreachableAfter)
+
+  def props(
+      majorityMemberRole: Option[String],
+      downIfInMinority: Boolean,
+      shutdownActorSystem: Boolean,
+      autoDownUnreachableAfter: FiniteDuration
+  ): Props =
+    Props(
+      classOf[MajorityLeaderAutoDown],
+      majorityMemberRole,
+      downIfInMinority,
+      shutdownActorSystem,
+      autoDownUnreachableAfter
+    )
 }
 
-private[autodown] class MajorityLeaderAutoDown(majorityMemberRole: Option[String], downIfInMinority: Boolean, shutdownActorSystem: Boolean, autoDownUnreachableAfter: FiniteDuration)
-  extends MajorityLeaderAutoDownBase(majorityMemberRole, downIfInMinority, autoDownUnreachableAfter) with ClusterCustomDowning {
+private[autodown] class MajorityLeaderAutoDown(
+    majorityMemberRole: Option[String],
+    downIfInMinority: Boolean,
+    shutdownActorSystem: Boolean,
+    autoDownUnreachableAfter: FiniteDuration
+) extends MajorityLeaderAutoDownBase(majorityMemberRole, downIfInMinority, autoDownUnreachableAfter)
+    with ClusterCustomDowning {
 
   override def down(node: Address): Unit = {
     log.info("Majority is auto-downing unreachable node [{}]", node)

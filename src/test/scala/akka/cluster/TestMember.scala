@@ -6,6 +6,7 @@ package akka.cluster
 import akka.actor.Address
 
 object TestMember {
+
   def apply(address: Address, status: MemberStatus): Member =
     apply(address, status, Set.empty)
 
