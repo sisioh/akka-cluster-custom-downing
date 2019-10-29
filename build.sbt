@@ -12,7 +12,8 @@ scalacOptions ++= Seq(
   "-feature",
   "-deprecation",
   "-unchecked",
-  "-encoding", "UTF-8",
+  "-encoding",
+  "UTF-8",
   "-language:implicitConversions",
   "-language:postfixOps",
   "-language:higherKinds"
@@ -23,7 +24,7 @@ licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
 val akkaVersion = "2.5.23"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-actor" % akkaVersion,
+  "com.typesafe.akka" %% "akka-actor"   % akkaVersion,
   "com.typesafe.akka" %% "akka-cluster" % akkaVersion,
 //  "com.typesafe.akka" %% "akka-cluster" % akkaVersion  % "test" classifier "tests",
   "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaVersion % Test,
@@ -52,10 +53,20 @@ executeTests in Test := Def.task {
   )
 }.value
 
+assemblyMergeStrategy in (MultiJvm, assembly) := {
+  case "application.conf" => MergeStrategy.concat
+  case "META-INF/aop.xml" => MergeStrategy.concat
+  case x =>
+    val old = (assemblyMergeStrategy in (MultiJvm, assembly)).value
+    old(x)
+}
+
+Test / fork := true
+
 configs(MultiJvm)
 
 BintrayPlugin.autoImport.bintrayPackage := "akka-cluster-custom-downing"
 
-enablePlugins(BintrayPlugin, ReleasePlugin)
+enablePlugins(MultiJvmPlugin, BintrayPlugin, ReleasePlugin)
 
 releaseCrossBuild := true
