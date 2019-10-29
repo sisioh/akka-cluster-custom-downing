@@ -4,9 +4,9 @@ organization := "com.github.TanUkkii007"
 
 homepage := Some(url("https://github.com/TanUkkii007/akka-cluster-custom-downing"))
 
-scalaVersion := "2.13.0"
+scalaVersion := "2.13.1"
 
-crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.0")
+crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.1")
 
 scalacOptions ++= Seq(
   "-feature",
@@ -31,21 +31,26 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.8" % Test
 )
 
-compile in MultiJvm <<= (compile in MultiJvm) triggeredBy (compile in Test)
+compile in MultiJvm := (compile in MultiJvm).triggeredBy(compile in Test).value
 
 parallelExecution in Test := false
 
-executeTests in Test <<= (executeTests in Test, executeTests in MultiJvm) map {
-  case (testResults, multiNodeResults) =>
-    val overall =
-      if (testResults.overall.id < multiNodeResults.overall.id)
-        multiNodeResults.overall
-      else
-        testResults.overall
-    Tests.Output(overall,
-      testResults.events ++ multiNodeResults.events,
-      testResults.summaries ++ multiNodeResults.summaries)
-}
+executeTests in Test := Def.task {
+  val testResults      = (executeTests in Test).value
+  val multiNodeResults = (executeTests in MultiJvm).value
+  val overall = (testResults.overall, multiNodeResults.overall) match {
+    case (TestResult.Passed, TestResult.Passed) => TestResult.Passed
+    case (TestResult.Error, _)                  => TestResult.Error
+    case (_, TestResult.Error)                  => TestResult.Error
+    case (TestResult.Failed, _)                 => TestResult.Failed
+    case (_, TestResult.Failed)                 => TestResult.Failed
+  }
+  Tests.Output(
+    overall,
+    testResults.events ++ multiNodeResults.events,
+    testResults.summaries ++ multiNodeResults.summaries
+  )
+}.value
 
 configs(MultiJvm)
 
