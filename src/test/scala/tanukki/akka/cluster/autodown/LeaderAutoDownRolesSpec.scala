@@ -9,9 +9,9 @@
 package tanukki.akka.cluster.autodown
 
 import akka.actor._
-import akka.cluster.ClusterEvent.{MemberRemoved, ReachableMember, UnreachableMember, LeaderChanged}
+import akka.cluster.ClusterEvent.{ LeaderChanged, MemberRemoved, ReachableMember, UnreachableMember }
 import akka.cluster.TestMember
-import akka.cluster.MemberStatus.{Down, Exiting, Removed, Up}
+import akka.cluster.MemberStatus.{ Down, Exiting, Removed, Up }
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 
@@ -20,19 +20,20 @@ case class DownCalled(node: Address)
 object LeaderAutoDownRolesSpec {
 
   val memberRoles = Set("testRole", "dc-1")
-  val testRoles = Set("testRole")
+  val testRoles   = Set("testRole")
 
   val memberA = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, memberRoles)
   val memberB = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, memberRoles)
   val memberC = TestMember(Address("akka.tcp", "sys", "c", 2552), Up, memberRoles)
   val memberD = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, Set("otherRole", "dc-1"))
 
-  class LeaderAutoDownRolesTestActor(targetRoles:              Set[String],
-                          autoDownUnreachableAfter: FiniteDuration,
-                          probe:                    ActorRef)
-    extends LeaderAutoDownRolesBase(targetRoles, autoDownUnreachableAfter) {
+  class LeaderAutoDownRolesTestActor(
+      targetRoles: Set[String],
+      autoDownUnreachableAfter: FiniteDuration,
+      probe: ActorRef
+  ) extends LeaderAutoDownRolesBase(targetRoles, autoDownUnreachableAfter) {
 
-    override def selfAddress = memberA.address
+    override def selfAddress          = memberA.address
     override def scheduler: Scheduler = context.system.scheduler
 
     override def down(node: Address): Unit = {

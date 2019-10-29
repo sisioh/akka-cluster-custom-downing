@@ -2,7 +2,7 @@ package tanukki.akka.cluster.autodown
 
 import akka.actor.Address
 import akka.cluster.ClusterEvent._
-import akka.cluster.{Member, MemberStatus}
+import akka.cluster.{ Member, MemberStatus }
 import akka.event.Logging
 
 import scala.collection.immutable
@@ -10,20 +10,21 @@ import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.FiniteDuration
 
 abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration)
-    extends CustomAutoDownBase(autoDownUnreachableAfter) with SplitBrainResolver {
+    extends CustomAutoDownBase(autoDownUnreachableAfter)
+    with SplitBrainResolver {
 
   private val log = Logging(context.system, this)
 
-  private var leader = false
-  private var roleLeader: Map[String, Boolean] = Map.empty
+  private var leader                                        = false
+  private var roleLeader: Map[String, Boolean]              = Map.empty
   private var membersByAddress: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ordering)
 
   def receiveEvent = {
-     case LeaderChanged(leaderOption) =>
+    case LeaderChanged(leaderOption) =>
       leader = leaderOption.contains(selfAddress)
-       if (isLeader) {
-         log.info("This node is the new Leader")
-       }
+      if (isLeader) {
+        log.info("This node is the new Leader")
+      }
       onLeaderChanged(leaderOption)
     case RoleLeaderChanged(role, leaderOption) =>
       roleLeader = roleLeader + (role -> leaderOption.contains(selfAddress))
@@ -38,7 +39,7 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
       log.info("{} is unreachable", m)
       replaceMember(m)
       unreachableMember(m)
-    case ReachableMember(m)   =>
+    case ReachableMember(m) =>
       log.info("{} is reachable", m)
       replaceMember(m)
       remove(m)
@@ -48,7 +49,7 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
     case MemberExited(m) =>
       log.info("{} exited the cluster", m)
       replaceMember(m)
-    case MemberRemoved(m, prev)  =>
+    case MemberRemoved(m, prev) =>
       log.info("{} was removed from the cluster", m)
       remove(m)
       removeMember(m)
@@ -68,9 +69,9 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
   override def initialize(state: CurrentClusterState): Unit = {
     leader = state.leader.exists(_ == selfAddress)
     roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
-    membersByAddress = immutable.SortedSet.empty(Member.ordering) union state.members.filterNot {m =>
-      m.status == MemberStatus.Removed
-    }
+    membersByAddress = immutable.SortedSet.empty(Member.ordering) union state.members.filterNot { m =>
+        m.status == MemberStatus.Removed
+      }
     super.initialize(state)
   }
 
@@ -91,27 +92,29 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
   }
 
   def isMajority(role: Option[String]): Boolean = {
-    val ms = majorityMemberOf(role)
+    val ms        = majorityMemberOf(role)
     val okMembers = ms filter isOK
     val koMembers = ms -- okMembers
 
     val isEqual = okMembers.size == koMembers.size
     return (okMembers.size > koMembers.size ||
-      isEqual && ms.headOption.map(okMembers.contains(_)).getOrElse(true))
+    isEqual && ms.headOption.map(okMembers.contains(_)).getOrElse(true))
   }
 
   def isMajorityAfterDown(members: Set[Member], role: Option[String]): Boolean = {
-    val minus = if (role.isEmpty) members else {
-      val r = role.get
-      members.filter(_.hasRole(r))
-    }
-    val ms = majorityMemberOf(role)
+    val minus =
+      if (role.isEmpty) members
+      else {
+        val r = role.get
+        members.filter(_.hasRole(r))
+      }
+    val ms        = majorityMemberOf(role)
     val okMembers = (ms filter isOK) -- minus
-    val koMembers =  ms -- okMembers
+    val koMembers = ms -- okMembers
 
     val isEqual = okMembers.size == koMembers.size
     return (okMembers.size > koMembers.size ||
-      isEqual && ms.headOption.map(okMembers.contains(_)).getOrElse(true))
+    isEqual && ms.headOption.map(okMembers.contains(_)).getOrElse(true))
   }
 
   private def isOK(member: Member) = {

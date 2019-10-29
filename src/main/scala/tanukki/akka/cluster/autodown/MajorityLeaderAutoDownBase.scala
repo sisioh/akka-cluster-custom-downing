@@ -2,12 +2,15 @@ package tanukki.akka.cluster.autodown
 
 import akka.actor.Address
 import akka.cluster.MemberStatus.Down
-import akka.cluster.{MemberStatus, Member}
+import akka.cluster.{ Member, MemberStatus }
 
 import scala.concurrent.duration.FiniteDuration
 
-abstract class MajorityLeaderAutoDownBase(majorityMemberRole: Option[String], downIfInMinority: Boolean, autoDownUnreachableAfter: FiniteDuration)
-    extends MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter) {
+abstract class MajorityLeaderAutoDownBase(
+    majorityMemberRole: Option[String],
+    downIfInMinority: Boolean,
+    autoDownUnreachableAfter: FiniteDuration
+) extends MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter) {
 
   override def onLeaderChanged(leader: Option[Address]): Unit = {
     if (majorityMemberRole.isEmpty && isLeader) downPendingUnreachableMembers()

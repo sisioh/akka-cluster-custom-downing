@@ -5,4 +5,5 @@ package tanukki.akka.cluster.autodown
   * This error is fired in DowningProvider and handled by ClusterCoreSupervisor, which leads to cluster shutdown.
   * @param strategyName
   */
-@SerialVersionUID(1L) class SplitBrainResolvedError(strategyName: String) extends Error(s"Resolution of split brain by $strategyName results in shutdown")
+@SerialVersionUID(1L) class SplitBrainResolvedError(strategyName: String)
+    extends Error(s"Resolution of split brain by $strategyName results in shutdown")

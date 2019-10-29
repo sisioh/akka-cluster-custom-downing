@@ -1,7 +1,7 @@
 package tanukki.akka.cluster.autodown
 
-import akka.actor.{ActorSystem, Address, Props}
-import akka.cluster.{Cluster, DowningProvider}
+import akka.actor.{ ActorSystem, Address, Props }
+import akka.cluster.{ Cluster, DowningProvider }
 import com.typesafe.config.Config
 
 import scala.concurrent.Await
@@ -28,20 +28,41 @@ class QuorumLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
       if (r.isEmpty) None else Some(r)
     }
     val quorumSize = system.settings.config.getInt("custom-downing.quorum-leader-auto-downing.quorum-size")
-    val downIfOutOfQuorum = system.settings.config.getBoolean("custom-downing.quorum-leader-auto-downing.down-if-out-of-quorum")
-    val shutdownActorSystem = system.settings.config.getBoolean("custom-downing.quorum-leader-auto-downing.shutdown-actor-system-on-resolution")
+    val downIfOutOfQuorum =
+      system.settings.config.getBoolean("custom-downing.quorum-leader-auto-downing.down-if-out-of-quorum")
+    val shutdownActorSystem =
+      system.settings.config.getBoolean("custom-downing.quorum-leader-auto-downing.shutdown-actor-system-on-resolution")
     Some(QuorumLeaderAutoDown.props(role, quorumSize, downIfOutOfQuorum, shutdownActorSystem, stableAfter))
   }
 }
 
-
 private[autodown] object QuorumLeaderAutoDown {
-  def props(quorumRole: Option[String], quorumSize: Int, downIfOutOfQuorum: Boolean, shutdownActorSystem: Boolean, autoDownUnreachableAfter: FiniteDuration): Props =
-    Props(classOf[QuorumLeaderAutoDown], quorumRole, quorumSize, downIfOutOfQuorum, shutdownActorSystem, autoDownUnreachableAfter)
+
+  def props(
+      quorumRole: Option[String],
+      quorumSize: Int,
+      downIfOutOfQuorum: Boolean,
+      shutdownActorSystem: Boolean,
+      autoDownUnreachableAfter: FiniteDuration
+  ): Props =
+    Props(
+      classOf[QuorumLeaderAutoDown],
+      quorumRole,
+      quorumSize,
+      downIfOutOfQuorum,
+      shutdownActorSystem,
+      autoDownUnreachableAfter
+    )
 }
 
-private[autodown] class QuorumLeaderAutoDown(quorumRole: Option[String], quorumSize: Int, downIfOutOfQuorum: Boolean, shutdownActorSystem: Boolean, autoDownUnreachableAfter: FiniteDuration)
-  extends QuorumLeaderAutoDownBase(quorumRole, quorumSize, downIfOutOfQuorum, autoDownUnreachableAfter) with ClusterCustomDowning {
+private[autodown] class QuorumLeaderAutoDown(
+    quorumRole: Option[String],
+    quorumSize: Int,
+    downIfOutOfQuorum: Boolean,
+    shutdownActorSystem: Boolean,
+    autoDownUnreachableAfter: FiniteDuration
+) extends QuorumLeaderAutoDownBase(quorumRole, quorumSize, downIfOutOfQuorum, autoDownUnreachableAfter)
+    with ClusterCustomDowning {
 
   override def down(node: Address): Unit = {
     log.info("Quorum leader is auto-downing unreachable node [{}]", node)

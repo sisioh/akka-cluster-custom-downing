@@ -1,13 +1,17 @@
 package tanukki.akka.cluster.autodown
 
 import akka.actor.Address
-import akka.cluster.{MemberStatus, Member}
+import akka.cluster.{ Member, MemberStatus }
 import akka.cluster.MemberStatus.Down
 
 import scala.concurrent.duration.FiniteDuration
 
-abstract class QuorumLeaderAutoDownBase(quorumRole: Option[String], quorumSize: Int, downIfOutOfQuorum: Boolean, autoDownUnreachableAfter: FiniteDuration)
-  extends QuorumAwareCustomAutoDownBase(quorumSize, autoDownUnreachableAfter) {
+abstract class QuorumLeaderAutoDownBase(
+    quorumRole: Option[String],
+    quorumSize: Int,
+    downIfOutOfQuorum: Boolean,
+    autoDownUnreachableAfter: FiniteDuration
+) extends QuorumAwareCustomAutoDownBase(quorumSize, autoDownUnreachableAfter) {
 
   override def onLeaderChanged(leader: Option[Address]): Unit = {
     if (quorumRole.isEmpty && isLeader) downPendingUnreachableMembers()
@@ -18,7 +22,6 @@ abstract class QuorumLeaderAutoDownBase(quorumRole: Option[String], quorumSize: 
       if (r == role && isRoleLeaderOf(r)) downPendingUnreachableMembers()
     }
   }
-
 
   override def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
     if (isQuorumMet(quorumRole)) {
