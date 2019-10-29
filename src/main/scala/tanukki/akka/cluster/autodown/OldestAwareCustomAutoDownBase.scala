@@ -8,13 +8,15 @@ import scala.collection.immutable
 import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.FiniteDuration
 
+
 abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration)
     extends CustomAutoDownBase(autoDownUnreachableAfter)
     with SplitBrainResolver {
 
   private val log = Logging(context.system, this)
 
-  private var membersByAge: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ageOrdering)
+  private var membersByAge: immutable.SortedSet[Member] =
+    immutable.SortedSet.empty(Member.ageOrdering)
 
   def receiveEvent = {
     case MemberUp(m) =>
@@ -34,12 +36,18 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
     case MemberExited(m) =>
       log.info("{} exited the cluster", m)
       replaceMember(m)
+    case MemberDowned(m) =>
+      log.info("{} was downed", m)
+      replaceMember(m)
+      onMemberDowned(m)
     case MemberRemoved(m, prev) =>
       log.info("{} was removed from the cluster", m)
       remove(m)
       removeMember(m)
       onMemberRemoved(m, prev)
   }
+
+  def onMemberDowned(member: Member): Unit = {}
 
   def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {}
 
@@ -59,7 +67,14 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
     membersByAge -= member
   }
 
-  def isAllIntermediateMemberRemoved = {
+  def isAllIntermediateMemberRemoved(member: Member): Boolean = {
+    val isUnsafe = membersByAge.filterNot(_ == member).exists { m =>
+      m.status == MemberStatus.Down || m.status == MemberStatus.Exiting
+    }
+    !isUnsafe
+  }
+
+  def isAllIntermediateMemberRemoved: Boolean = {
     val isUnsafe = membersByAge.exists { m =>
       m.status == MemberStatus.Down || m.status == MemberStatus.Exiting
     }
@@ -74,8 +89,16 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
     isAllIntermediateMemberRemoved && isOldestUnsafe(None)
   }
 
+  def isOldestWithout(member: Member): Boolean = {
+    isAllIntermediateMemberRemoved(member) && isOldestUnsafe(None)
+  }
+
   def isOldestOf(role: Option[String]): Boolean = {
     isAllIntermediateMemberRemoved && isOldestUnsafe(role)
+  }
+
+  def isOldestOf(role: Option[String], without: Member): Boolean = {
+    isAllIntermediateMemberRemoved(without) && isOldestUnsafe(role)
   }
 
   def isOldestAlone(role: Option[String]): Boolean = {
@@ -99,7 +122,8 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
     } else false
   }
 
-  def oldestMember(role: Option[String]): Option[Member] = targetMembers(role).headOption
+  def oldestMember(role: Option[String]): Option[Member] =
+    targetMembers(role).headOption
 
   private def targetMembers(role: Option[String]): SortedSet[Member] = {
     role.fold(membersByAge)(r => membersByAge.filter(_.hasRole(r)))
@@ -107,7 +131,8 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
 
   private def isOK(member: Member) = {
     (member.status == MemberStatus.Up || member.status == MemberStatus.Leaving) &&
-    (!pendingUnreachableMembers.contains(member) && !unstableUnreachableMembers.contains(member))
+    (!pendingUnreachableMembers.contains(member) && !unstableUnreachableMembers
+      .contains(member))
   }
 
   private def isKO(member: Member): Boolean = !isOK(member)

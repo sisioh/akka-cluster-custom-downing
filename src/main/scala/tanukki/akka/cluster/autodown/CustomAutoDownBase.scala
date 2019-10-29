@@ -5,7 +5,6 @@
   * The original source code can be found here.
   * https://github.com/akka/akka/blob/master/akka-cluster/src/main/scala/akka/cluster/AutoDown.scala
   */
-
 package tanukki.akka.cluster.autodown
 
 import akka.actor.{ Actor, Address, Cancellable, Scheduler }
@@ -18,7 +17,8 @@ object CustomDowning {
   case class UnreachableTimeout(member: Member)
 }
 
-abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) extends Actor {
+abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration)
+    extends Actor {
 
   import CustomDowning._
 
@@ -79,7 +79,9 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
     if (autoDownUnreachableAfter == Duration.Zero) {
       downOrAddPending(m)
     } else {
-      val task = scheduler.scheduleOnce(autoDownUnreachableAfter, self, UnreachableTimeout(m))
+      val task = scheduler.scheduleOnce(autoDownUnreachableAfter,
+                                        self,
+                                        UnreachableTimeout(m))
       scheduledUnreachable += (m -> task)
     }
   }
@@ -91,15 +93,19 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
     unstableUnreachable -= member
   }
 
-  def scheduledUnreachableMembers: Map[Member, Cancellable] = scheduledUnreachable
+  def scheduledUnreachableMembers: Map[Member, Cancellable] =
+    scheduledUnreachable
 
   def pendingUnreachableMembers: Set[Member] = pendingUnreachable
 
   def pendingAsUnreachable(member: Member): Unit = pendingUnreachable += member
 
   def downPendingUnreachableMembers(): Unit = {
-    pendingUnreachable.foreach(member => down(member.address))
-    pendingUnreachable = Set.empty
+    val (head, tail) = pendingUnreachable.splitAt(1)
+    head.foreach { member =>
+      down(member.address)
+    }
+    pendingUnreachable = tail
   }
 
   def unstableUnreachableMembers: Set[Member] = unstableUnreachable
