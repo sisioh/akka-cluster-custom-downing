@@ -7,14 +7,17 @@
   */
 
 package tanukki.akka.cluster.autodown
-
+import akka.pattern.ask
 import akka.actor._
 import akka.cluster.ClusterEvent._
 import akka.cluster.MemberStatus._
 import akka.cluster.{ Member, MemberStatus, TestMember }
+import akka.util.Timeout
+
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 import scala.concurrent.duration._
 import scala.collection.immutable
+import scala.util.{ Failure, Success }
 
 case class DownCalledBySecondaryOldest(address: Address)
 
@@ -42,11 +45,14 @@ object OldestAutoDownRolesSpec {
     override def scheduler: Scheduler = context.system.scheduler
 
     override def down(node: Address): Unit = {
-      if (isOldestOf(testRoleOpt))
+      val member = initialMembersByAge.find(_.address == node).get
+      if (isOldestOf(testRoleOpt)) {
         probe ! DownCalled(node)
-      else if (isSecondaryOldest(testRoleOpt))
+        self ! MemberDowned(member.copy(Down))
+      } else if (isSecondaryOldest(testRoleOpt)) {
         probe ! DownCalledBySecondaryOldest(node)
-      else
+        self ! MemberDowned(member.copy(Down))
+      } else
         probe ! "down must only be done by oldest member"
     }
 
@@ -78,6 +84,17 @@ class OldestAutoDownRolesSpec extends AkkaSpec(ActorSystem("OldestAutoDownRolesS
       a ! CurrentClusterState(members = initialMembersByAge)
       a ! UnreachableMember(second)
       expectMsg(DownCalled(second.address))
+    }
+
+    "2-down unreachable when oldest" in {
+      val second = initialMembersByAge.drop(1).head
+      val third  = initialMembersByAge.drop(2).head
+      val a      = autoDownActor(Duration.Zero)
+      a ! CurrentClusterState(members = initialMembersByAge)
+      a ! UnreachableMember(second)
+      a ! UnreachableMember(third)
+      expectMsg(DownCalled(second.address))
+      expectMsg(DownCalled(third.address))
     }
 
     "not down unreachable when not oldest" in {
