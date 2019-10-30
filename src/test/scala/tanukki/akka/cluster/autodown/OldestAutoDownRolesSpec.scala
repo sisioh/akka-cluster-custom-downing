@@ -7,17 +7,14 @@
   */
 
 package tanukki.akka.cluster.autodown
-import akka.pattern.ask
+
 import akka.actor._
 import akka.cluster.ClusterEvent._
 import akka.cluster.MemberStatus._
-import akka.cluster.{ Member, MemberStatus, TestMember }
-import akka.util.Timeout
+import akka.cluster.{ Member, TestMember }
 
-import scala.concurrent.duration.{ Duration, FiniteDuration }
-import scala.concurrent.duration._
 import scala.collection.immutable
-import scala.util.{ Failure, Success }
+import scala.concurrent.duration.{ Duration, FiniteDuration, _ }
 
 case class DownCalledBySecondaryOldest(address: Address)
 

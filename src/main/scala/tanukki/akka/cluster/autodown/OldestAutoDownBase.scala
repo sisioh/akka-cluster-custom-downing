@@ -16,8 +16,7 @@ abstract class OldestAutoDownBase(
       downPendingUnreachableMembers()
   }
 
-  override def onMemberRemoved(member: Member,
-                               previousStatus: MemberStatus): Unit = {
+  override def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
     if (isOldestOf(oldestMemberRole))
       downPendingUnreachableMembers()
   }
@@ -25,8 +24,7 @@ abstract class OldestAutoDownBase(
   override def downOrAddPending(member: Member): Unit = {
     if (isOldestOf(oldestMemberRole)) {
       down(member.address)
-      replaceMember(member.copy(Down))
-   } else {
+    } else {
       pendingAsUnreachable(member)
     }
   }
