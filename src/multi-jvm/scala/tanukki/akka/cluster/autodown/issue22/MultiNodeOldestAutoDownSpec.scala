@@ -39,7 +39,7 @@ abstract class MultiNodeOldestAutoDownSpec(
 
       enterBarrier("before-exit-two-node")
       runOn(nodeA) {
-        // kill 'fifth' node
+        // kill 'second' and 'third'
         testConductor.exit(nodeB, 0).await
         testConductor.exit(nodeC, 0).await
         enterBarrier("down-two-node")
