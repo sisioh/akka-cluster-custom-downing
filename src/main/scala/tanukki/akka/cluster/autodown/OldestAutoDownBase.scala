@@ -11,6 +11,11 @@ abstract class OldestAutoDownBase(
     autoDownUnreachableAfter: FiniteDuration
 ) extends OldestAwareCustomAutoDownBase(autoDownUnreachableAfter) {
 
+  override def onMemberDowned(member: Member): Unit = {
+    if (isOldestOf(oldestMemberRole, member))
+      downPendingUnreachableMembers()
+  }
+
   override def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
     if (isOldestOf(oldestMemberRole))
       downPendingUnreachableMembers()
@@ -19,7 +24,6 @@ abstract class OldestAutoDownBase(
   override def downOrAddPending(member: Member): Unit = {
     if (isOldestOf(oldestMemberRole)) {
       down(member.address)
-      replaceMember(member.copy(Down))
     } else {
       pendingAsUnreachable(member)
     }
