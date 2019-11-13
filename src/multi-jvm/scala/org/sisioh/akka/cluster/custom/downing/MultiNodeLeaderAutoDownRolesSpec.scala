@@ -3,26 +3,42 @@
   * 2016- modified by Yusuke Yasuda
   * original source code is at https://github.com/akka/akka/blob/master/akka-cluster/src/multi-jvm/scala/akka/cluster/LeaderDowningNodeThatIsUnreachableSpec.scala
   */
-package tanukki.akka.cluster.autodown
+package org.sisioh.akka.cluster.custom.downing
 
 import akka.cluster.MultiNodeClusterSpec
-import akka.remote.testkit.{STMultiNodeSpec, MultiNodeSpec}
+import akka.remote.testkit.{ MultiNodeSpec, STMultiNodeSpec }
 import akka.testkit.LongRunningTest
+
 import scala.concurrent.duration._
 
+class LeaderDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode1
+    extends MultiNodeLeaderAutoDownRolesSpec(MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet = true))
 
-class LeaderDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode1 extends MultiNodeLeaderAutoDownRolesSpec(MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet = true))
-class LeaderDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode2 extends MultiNodeLeaderAutoDownRolesSpec(MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet = true))
-class LeaderDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode3 extends MultiNodeLeaderAutoDownRolesSpec(MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet = true))
-class LeaderDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode4 extends MultiNodeLeaderAutoDownRolesSpec(MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet = true))
+class LeaderDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode2
+    extends MultiNodeLeaderAutoDownRolesSpec(MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet = true))
 
-class LeaderDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode1 extends MultiNodeLeaderAutoDownRolesSpec(MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet = false))
-class LeaderDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode2 extends MultiNodeLeaderAutoDownRolesSpec(MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet = false))
-class LeaderDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode3 extends MultiNodeLeaderAutoDownRolesSpec(MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet = false))
-class LeaderDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode4 extends MultiNodeLeaderAutoDownRolesSpec(MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet = false))
+class LeaderDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode3
+    extends MultiNodeLeaderAutoDownRolesSpec(MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet = true))
 
-abstract class MultiNodeLeaderAutoDownRolesSpec(multiNodeConfig: MultiNodeLeaderAutoDownRolesSpecConfig) extends MultiNodeSpec(multiNodeConfig)
-with STMultiNodeSpec with MultiNodeClusterSpec {
+class LeaderDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode4
+    extends MultiNodeLeaderAutoDownRolesSpec(MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet = true))
+
+class LeaderDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode1
+    extends MultiNodeLeaderAutoDownRolesSpec(MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet = false))
+
+class LeaderDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode2
+    extends MultiNodeLeaderAutoDownRolesSpec(MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet = false))
+
+class LeaderDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode3
+    extends MultiNodeLeaderAutoDownRolesSpec(MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet = false))
+
+class LeaderDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode4
+    extends MultiNodeLeaderAutoDownRolesSpec(MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet = false))
+
+abstract class MultiNodeLeaderAutoDownRolesSpec(multiNodeConfig: MultiNodeLeaderAutoDownRolesSpecConfig)
+    extends MultiNodeSpec(multiNodeConfig)
+    with STMultiNodeSpec
+    with MultiNodeClusterSpec {
   import multiNodeConfig._
 
   muteMarkingAsUnreachable()

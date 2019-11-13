@@ -1,26 +1,25 @@
-package tanukki.akka.cluster.autodown
+package org.sisioh.akka.cluster.custom.downing
 
 import akka.cluster.MultiNodeClusterSpec
 import akka.remote.testkit.MultiNodeConfig
 import com.typesafe.config.ConfigFactory
 
-final case class MultiNodeRoleLeaderDownRolesSpecConfig(failureDetectorPuppet: Boolean) extends MultiNodeConfig {
+final case class MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet: Boolean) extends MultiNodeConfig {
   val node_A_1 = role("node-A-1")
   val node_A_2 = role("node-A-2")
   val node_A_3 = role("node-A-3")
   val node_B_1 = role("node-B-1")
-  val node_B_2 = role("node-B-2")
 
   commonConfig(
     ConfigFactory
       .parseString(
         """
-      |akka.cluster.downing-provider-class = "org.sisioh.akka.cluster.custom.downing.RoleLeaderAutoDowningRoles"
+      |akka.cluster.downing-provider-class = "org.sisioh.akka.cluster.custom.downing.LeaderAutoDowningRoles"
       |custom-downing {
       |  stable-after = 0s
-      |  role-leader-auto-downing-roles {
-      |    leader-role = "role-A"
-      |    target-roles = [role-B]
+      |
+      |  leader-auto-downing-roles {
+      |    target-roles = [role-A]
       |  }
       |}
       |akka.cluster.metrics.enabled=off
@@ -37,10 +36,9 @@ final case class MultiNodeRoleLeaderDownRolesSpecConfig(failureDetectorPuppet: B
       |}
     """.stripMargin))
 
-  nodeConfig(node_B_1, node_B_2)(ConfigFactory.parseString("""
+  nodeConfig(node_B_1)(ConfigFactory.parseString("""
       |akka.cluster {
       |  roles = [role-B]
       |}
     """.stripMargin))
-
 }

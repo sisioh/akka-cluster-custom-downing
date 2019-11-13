@@ -1,8 +1,8 @@
-package tanukki.akka.cluster.autodown.issue22
+package org.sisioh.akka.cluster.custom.downing.issue22
 
-import akka.cluster.{Member, MultiNodeClusterSpec}
+import akka.cluster.{ Member, MultiNodeClusterSpec }
 import akka.remote.testconductor.RoleName
-import akka.remote.testkit.{MultiNodeSpec, STMultiNodeSpec}
+import akka.remote.testkit.{ MultiNodeSpec, STMultiNodeSpec }
 import akka.testkit.LongRunningTest
 
 import scala.collection.immutable
@@ -13,10 +13,12 @@ class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNo
     extends MultiNodeOldestAutoDownSpec(
       MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false)
     )
+
 class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode2
     extends MultiNodeOldestAutoDownSpec(
       MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false)
     )
+
 class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode3
     extends MultiNodeOldestAutoDownSpec(
       MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false)
@@ -35,7 +37,7 @@ abstract class MultiNodeOldestAutoDownSpec(
     "issue-22" taggedAs LongRunningTest in {
       awaitClusterUp(nodeA, nodeB, nodeC)
       val secondAddress = node(nodeB).address
-      val thirdAddress = node(nodeC).address
+      val thirdAddress  = node(nodeC).address
 
       enterBarrier("before-exit-two-node")
       runOn(nodeA) {
