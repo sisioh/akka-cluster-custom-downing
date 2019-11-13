@@ -35,26 +35,30 @@ object MajorityLeaderAutoDownSpec {
       majorityRole: Option[String],
       autoDownUnreachableAfter: FiniteDuration,
       probe: ActorRef
-  ) extends MajorityLeaderAutoDownBase(majorityRole, true, autoDownUnreachableAfter) {
+  ) extends MajorityLeaderAutoDownBase(
+        majorityRole,
+        downIfInMinority = true,
+        autoDownUnreachableAfter = autoDownUnreachableAfter
+      ) {
 
-    override def selfAddress          = address
-    override def scheduler: Scheduler = context.system.scheduler
+    override protected def selfAddress: Address = address
+    override protected def scheduler: Scheduler = context.system.scheduler
 
-    override def down(node: Address): Unit = {
+    override protected def down(node: Address): Unit = {
       if (isMajority(majorityRole)) {
         if (majorityRole.fold(isLeader)(isRoleLeaderOf)) {
           probe ! DownCalled(node)
         } else {
           probe ! "down must only be done by quorum leader"
         }
-      } else {
+      } else
         shutdownSelf()
-      }
     }
 
     override def shutdownSelf(): Unit = {
       probe ! ShutDownCausedBySplitBrainResolver
     }
+
   }
 }
 

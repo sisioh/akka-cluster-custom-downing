@@ -9,8 +9,6 @@ import scala.concurrent.duration.{ FiniteDuration, _ }
 
 final class RoleLeaderAutoDowningRoles(system: ActorSystem) extends DowningProvider {
 
-  private[this] val cluster = Cluster(system)
-
   private val config: Config = system.settings.config
 
   override def downRemovalMargin: FiniteDuration = {
@@ -22,10 +20,9 @@ final class RoleLeaderAutoDowningRoles(system: ActorSystem) extends DowningProvi
   }
 
   override def downingActorProps: Option[Props] = {
-    val stableAfter = system.settings.config.getDuration("custom-downing.stable-after").toMillis millis
-    val leaderRole  = system.settings.config.getString("custom-downing.role-leader-auto-downing-roles.leader-role")
-    val roles =
-      system.settings.config.getStringList("custom-downing.role-leader-auto-downing-roles.target-roles").asScala.toSet
+    val stableAfter = config.getDuration("custom-downing.stable-after").toMillis millis
+    val leaderRole  = config.getString("custom-downing.role-leader-auto-downing-roles.leader-role")
+    val roles       = config.getStringList("custom-downing.role-leader-auto-downing-roles.target-roles").asScala.toSet
     if (roles.isEmpty) None else Some(RoleLeaderAutoDownRoles.props(leaderRole, roles, stableAfter))
   }
 }
@@ -33,7 +30,7 @@ final class RoleLeaderAutoDowningRoles(system: ActorSystem) extends DowningProvi
 private[downing] object RoleLeaderAutoDownRoles {
 
   def props(leaderRole: String, targetRoles: Set[String], autoDownUnreachableAfter: FiniteDuration): Props =
-    Props(classOf[RoleLeaderAutoDownRoles], leaderRole, targetRoles, autoDownUnreachableAfter)
+    Props(new RoleLeaderAutoDownRoles(leaderRole, targetRoles, autoDownUnreachableAfter))
 }
 
 private[downing] class RoleLeaderAutoDownRoles(
@@ -43,7 +40,7 @@ private[downing] class RoleLeaderAutoDownRoles(
 ) extends RoleLeaderAutoDownRolesBase(leaderRole, targetRoles, autoDownUnreachableAfter)
     with ClusterCustomDowning {
 
-  override def down(node: Address): Unit = {
+  override protected def down(node: Address): Unit = {
     log.info("RoleLeader is auto-downing unreachable node [{}]", node)
     cluster.down(node)
   }

@@ -17,7 +17,7 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
   private var membersByAge: immutable.SortedSet[Member] =
     immutable.SortedSet.empty(Member.ageOrdering)
 
-  def receiveEvent = {
+  override def receiveEvent: Receive = {
     case MemberUp(m) =>
       log.info("{} is up", m)
       replaceMember(m)
@@ -114,7 +114,7 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
     }
   }
 
-  def isSecondaryOldest(role: Option[String]) = {
+  def isSecondaryOldest(role: Option[String]): Boolean = {
     val tm = targetMembers(role)
     if (tm.size >= 2) {
       tm.slice(1, 2).head.address == selfAddress

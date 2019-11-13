@@ -7,11 +7,11 @@ import scala.concurrent.duration._
 
 trait ClusterCustomDowning extends ActorLogging { base: CustomAutoDownBase =>
 
-  val cluster = Cluster(context.system)
+  protected val cluster: Cluster = Cluster(context.system)
 
-  override def selfAddress: Address = cluster.selfAddress
+  override protected def selfAddress: Address = cluster.selfAddress
 
-  override def scheduler: Scheduler = {
+  override protected def scheduler: Scheduler = {
     if (context.system.scheduler.maxFrequency < 1.second / cluster.settings.SchedulerTickDuration) {
       log.warning(
         "CustomDowning does not use a cluster dedicated scheduler. Cluster will use a dedicated scheduler if configured " +
@@ -23,10 +23,10 @@ trait ClusterCustomDowning extends ActorLogging { base: CustomAutoDownBase =>
     context.system.scheduler
   }
 
-  override def preStart(): Unit = {
+  override def preStart(): Unit =
     cluster.subscribe(self, classOf[ClusterDomainEvent])
-  }
-  override def postStop(): Unit = {
+
+  override def postStop(): Unit =
     cluster.unsubscribe(self)
-  }
+
 }

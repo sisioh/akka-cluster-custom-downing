@@ -38,10 +38,10 @@ object OldestAutoDownRolesSpec {
       probe: ActorRef
   ) extends OldestAutoDownBase(testRoleOpt, downIfAlone, autoDownUnreachableAfter) {
 
-    override def selfAddress          = address
-    override def scheduler: Scheduler = context.system.scheduler
+    override protected def selfAddress: Address = address
+    override protected def scheduler: Scheduler = context.system.scheduler
 
-    override def down(node: Address): Unit = {
+    override protected def down(node: Address): Unit = {
       val member = initialMembersByAge.find(_.address == node).get
       if (isOldestOf(testRoleOpt)) {
         probe ! DownCalled(node)

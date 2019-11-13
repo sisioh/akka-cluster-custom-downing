@@ -20,7 +20,7 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
 
   private var membersByAge: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ageOrdering)
 
-  def receiveEvent = {
+  override def receiveEvent: Receive = {
     case LeaderChanged(leaderOption) =>
       leader = leaderOption.contains(selfAddress)
       if (isLeader) {
@@ -28,7 +28,7 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
       }
       onLeaderChanged(leaderOption)
     case RoleLeaderChanged(role, leaderOption) =>
-      roleLeader = roleLeader + (role -> leaderOption.contains(selfAddress))
+      roleLeader += (role -> leaderOption.contains(selfAddress))
       if (isRoleLeaderOf(role)) {
         log.info("This node is the new role leader for role {}", role)
       }
@@ -68,7 +68,7 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
   def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {}
 
   override def initialize(state: CurrentClusterState): Unit = {
-    leader = state.leader.exists(_ == selfAddress)
+    leader = state.leader.contains(selfAddress)
     roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
     membersByAge = immutable.SortedSet.empty(Member.ageOrdering) union state.members.filterNot { m =>
         m.status == MemberStatus.Removed
@@ -97,12 +97,12 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
     role.fold(ms)(r => ms.filter(_.hasRole(r)))
   }
 
-  def isQuorumMet(role: Option[String]) = {
+  def isQuorumMet(role: Option[String]): Boolean = {
     val ms = quorumMemberOf(role)
     ms.size >= quorumSize
   }
 
-  def isQuorumMetAfterDown(members: Set[Member], role: Option[String]) = {
+  def isQuorumMetAfterDown(members: Set[Member], role: Option[String]): Boolean = {
     val minus =
       if (role.isEmpty) members.size
       else {

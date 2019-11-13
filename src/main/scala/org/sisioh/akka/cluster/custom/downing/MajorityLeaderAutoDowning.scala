@@ -9,8 +9,6 @@ import scala.concurrent.duration._
 
 class MajorityLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
 
-  private[this] val cluster = Cluster(system)
-
   private val config: Config = system.settings.config
 
   override def downRemovalMargin: FiniteDuration = {
@@ -32,6 +30,7 @@ class MajorityLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
       config.getBoolean("custom-downing.majority-leader-auto-downing.shutdown-actor-system-on-resolution")
     Some(MajorityLeaderAutoDown.props(majorityMemberRole, downIfInMinority, shutdownActorSystem, stableAfter))
   }
+
 }
 
 private[downing] object MajorityLeaderAutoDown {
@@ -43,11 +42,7 @@ private[downing] object MajorityLeaderAutoDown {
       autoDownUnreachableAfter: FiniteDuration
   ): Props =
     Props(
-      classOf[MajorityLeaderAutoDown],
-      majorityMemberRole,
-      downIfInMinority,
-      shutdownActorSystem,
-      autoDownUnreachableAfter
+      new MajorityLeaderAutoDown(majorityMemberRole, downIfInMinority, shutdownActorSystem, autoDownUnreachableAfter)
     )
 }
 
@@ -59,12 +54,12 @@ private[downing] class MajorityLeaderAutoDown(
 ) extends MajorityLeaderAutoDownBase(majorityMemberRole, downIfInMinority, autoDownUnreachableAfter)
     with ClusterCustomDowning {
 
-  override def down(node: Address): Unit = {
+  override protected def down(node: Address): Unit = {
     log.info("Majority is auto-downing unreachable node [{}]", node)
     cluster.down(node)
   }
 
-  override def shutdownSelf(): Unit = {
+  override protected def shutdownSelf(): Unit = {
     if (shutdownActorSystem) {
       Await.result(context.system.terminate(), 10 seconds)
     } else {

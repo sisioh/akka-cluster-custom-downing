@@ -9,8 +9,6 @@ import scala.concurrent.duration._
 
 class QuorumLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
 
-  private[this] val cluster = Cluster(system)
-
   private val config: Config = system.settings.config
 
   override def downRemovalMargin: FiniteDuration = {
@@ -46,13 +44,9 @@ private[downing] object QuorumLeaderAutoDown {
       autoDownUnreachableAfter: FiniteDuration
   ): Props =
     Props(
-      classOf[QuorumLeaderAutoDown],
-      quorumRole,
-      quorumSize,
-      downIfOutOfQuorum,
-      shutdownActorSystem,
-      autoDownUnreachableAfter
+      new QuorumLeaderAutoDown(quorumRole, quorumSize, downIfOutOfQuorum, shutdownActorSystem, autoDownUnreachableAfter)
     )
+
 }
 
 private[downing] class QuorumLeaderAutoDown(
@@ -64,12 +58,12 @@ private[downing] class QuorumLeaderAutoDown(
 ) extends QuorumLeaderAutoDownBase(quorumRole, quorumSize, downIfOutOfQuorum, autoDownUnreachableAfter)
     with ClusterCustomDowning {
 
-  override def down(node: Address): Unit = {
+  override protected def down(node: Address): Unit = {
     log.info("Quorum leader is auto-downing unreachable node [{}]", node)
     cluster.down(node)
   }
 
-  override def shutdownSelf(): Unit = {
+  override protected def shutdownSelf(): Unit = {
     if (shutdownActorSystem) {
       Await.result(context.system.terminate(), 10 seconds)
     } else {

@@ -11,7 +11,7 @@ abstract class LeaderAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
 
   private val log = Logging(context.system, this)
 
-  private var leader = false
+  private var leader: Boolean = false
 
   def onLeaderChanged(leader: Option[Address]): Unit = {}
 
@@ -36,7 +36,7 @@ abstract class LeaderAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
   }
 
   override def initialize(state: CurrentClusterState): Unit = {
-    leader = state.leader.exists(_ == selfAddress)
+    leader = state.leader.contains(selfAddress)
     super.initialize(state)
   }
 }

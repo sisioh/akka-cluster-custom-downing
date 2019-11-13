@@ -37,22 +37,21 @@ object QuorumLeaderAutoDownSpec {
       probe: ActorRef
   ) extends QuorumLeaderAutoDownBase(quorumRole, 3, true, autoDownUnreachableAfter) {
 
-    override def selfAddress          = address
-    override def scheduler: Scheduler = context.system.scheduler
+    override protected def selfAddress: Address = address
+    override protected def scheduler: Scheduler = context.system.scheduler
 
-    override def down(node: Address): Unit = {
+    override protected def down(node: Address): Unit = {
       if (isQuorumMet(quorumRole)) {
         if (quorumRole.fold(isLeader)(isRoleLeaderOf)) {
           probe ! DownCalled(node)
         } else {
           probe ! "down must only be done by quorum leader"
         }
-      } else {
+      } else
         shutdownSelf()
-      }
     }
 
-    override def shutdownSelf(): Unit = {
+    override protected def shutdownSelf(): Unit = {
       probe ! ShutDownCausedBySplitBrainResolver
     }
   }

@@ -33,10 +33,10 @@ object LeaderAutoDownRolesSpec {
       probe: ActorRef
   ) extends LeaderAutoDownRolesBase(targetRoles, autoDownUnreachableAfter) {
 
-    override def selfAddress          = memberA.address
-    override def scheduler: Scheduler = context.system.scheduler
+    override protected def selfAddress: Address = memberA.address
+    override protected def scheduler: Scheduler = context.system.scheduler
 
-    override def down(node: Address): Unit = {
+    override protected def down(node: Address): Unit = {
       if (isLeader)
         probe ! DownCalled(node)
       else
@@ -50,7 +50,7 @@ class LeaderAutoDownRolesSpec extends AkkaSpec(ActorSystem("LeaderAutoDownRolesS
   import LeaderAutoDownRolesSpec._
 
   def autoDownActor(autoDownUnreachableAfter: FiniteDuration): ActorRef =
-    system.actorOf(Props(classOf[LeaderAutoDownRolesTestActor], testRoles, autoDownUnreachableAfter, testActor))
+    system.actorOf(Props(new LeaderAutoDownRolesTestActor(testRoles, autoDownUnreachableAfter, testActor)))
 
   "LeaderAutoDownRoles" must {
 

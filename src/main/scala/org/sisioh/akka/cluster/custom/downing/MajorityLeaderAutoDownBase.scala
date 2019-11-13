@@ -33,16 +33,14 @@ abstract class MajorityLeaderAutoDownBase(
     super.onMemberRemoved(member, previousStatus)
   }
 
-  override def downOrAddPending(member: Member): Unit = {
+  override protected def downOrAddPending(member: Member): Unit =
     if (isLeaderOf(majorityMemberRole)) {
       down(member.address)
       replaceMember(member.copy(Down))
-    } else {
+    } else
       pendingAsUnreachable(member)
-    }
-  }
 
-  override def downOrAddPendingAll(members: Set[Member]): Unit = {
+  override protected def downOrAddPendingAll(members: Set[Member]): Unit = {
     if (isMajorityAfterDown(members, majorityMemberRole)) {
       members.foreach(downOrAddPending)
     } else if (downIfInMinority) {

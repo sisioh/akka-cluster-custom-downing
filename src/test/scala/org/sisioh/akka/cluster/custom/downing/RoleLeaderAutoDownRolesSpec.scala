@@ -38,10 +38,10 @@ object RoleLeaderAutoDownRolesSpec {
       probe: ActorRef
   ) extends RoleLeaderAutoDownRolesBase(leaderRole, targetRoles, autoDownUnreachableAfter) {
 
-    override def selfAddress          = roleLeaderA.address
-    override def scheduler: Scheduler = context.system.scheduler
+    override protected def selfAddress: Address = roleLeaderA.address
+    override protected def scheduler: Scheduler = context.system.scheduler
 
-    override def down(node: Address): Unit = {
+    override protected def down(node: Address): Unit = {
       if (isRoleLeaderOf(leaderRole))
         probe ! DownCalled(node)
       else

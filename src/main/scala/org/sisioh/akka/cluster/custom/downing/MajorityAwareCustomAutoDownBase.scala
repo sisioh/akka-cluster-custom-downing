@@ -15,11 +15,11 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
 
   private val log = Logging(context.system, this)
 
-  private var leader                                        = false
+  private var leader: Boolean                               = false
   private var roleLeader: Map[String, Boolean]              = Map.empty
   private var membersByAddress: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ordering)
 
-  def receiveEvent = {
+  def receiveEvent: Receive = {
     case LeaderChanged(leaderOption) =>
       leader = leaderOption.contains(selfAddress)
       if (isLeader) {
@@ -27,7 +27,7 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
       }
       onLeaderChanged(leaderOption)
     case RoleLeaderChanged(role, leaderOption) =>
-      roleLeader = roleLeader + (role -> leaderOption.contains(selfAddress))
+      roleLeader += (role -> leaderOption.contains(selfAddress))
       if (isRoleLeaderOf(role)) {
         log.info("This node is the new role leader for role {}", role)
       }
@@ -67,7 +67,7 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
   def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {}
 
   override def initialize(state: CurrentClusterState): Unit = {
-    leader = state.leader.exists(_ == selfAddress)
+    leader = state.leader.contains(selfAddress)
     roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
     membersByAddress = immutable.SortedSet.empty(Member.ordering) union state.members.filterNot { m =>
         m.status == MemberStatus.Removed
@@ -97,8 +97,7 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
     val koMembers = ms -- okMembers
 
     val isEqual = okMembers.size == koMembers.size
-    return (okMembers.size > koMembers.size ||
-    isEqual && ms.headOption.map(okMembers.contains(_)).getOrElse(true))
+    okMembers.size > koMembers.size || isEqual && ms.headOption.map(okMembers.contains(_)).getOrElse(true)
   }
 
   def isMajorityAfterDown(members: Set[Member], role: Option[String]): Boolean = {
@@ -113,8 +112,7 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
     val koMembers = ms -- okMembers
 
     val isEqual = okMembers.size == koMembers.size
-    return (okMembers.size > koMembers.size ||
-    isEqual && ms.headOption.map(okMembers.contains(_)).getOrElse(true))
+    okMembers.size > koMembers.size || isEqual && ms.headOption.map(okMembers.contains(_)).getOrElse(true)
   }
 
   private def isOK(member: Member) = {

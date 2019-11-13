@@ -34,7 +34,7 @@ abstract class QuorumLeaderAutoDownBase(
     super.onMemberRemoved(member, previousStatus)
   }
 
-  override def downOrAddPending(member: Member): Unit = {
+  override protected def downOrAddPending(member: Member): Unit = {
     if (isLeaderOf(quorumRole)) {
       down(member.address)
       replaceMember(member.copy(Down))
@@ -43,7 +43,7 @@ abstract class QuorumLeaderAutoDownBase(
     }
   }
 
-  override def downOrAddPendingAll(members: Set[Member]): Unit = {
+  override protected def downOrAddPendingAll(members: Set[Member]): Unit = {
     if (isQuorumMetAfterDown(members, quorumRole)) {
       members.foreach(downOrAddPending)
     } else if (downIfOutOfQuorum) {

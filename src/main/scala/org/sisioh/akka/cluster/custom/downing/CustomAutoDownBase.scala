@@ -22,19 +22,19 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
 
   import CustomDowning._
 
-  def selfAddress: Address
+  protected def selfAddress: Address
 
-  def down(node: Address): Unit
+  protected def down(node: Address): Unit
 
-  def downOrAddPending(member: Member): Unit
+  protected def downOrAddPending(member: Member): Unit
 
-  def downOrAddPendingAll(members: Set[Member]): Unit
+  protected def downOrAddPendingAll(members: Set[Member]): Unit
 
-  def scheduler: Scheduler
+  protected def scheduler: Scheduler
 
   import context.dispatcher
 
-  val skipMemberStatus = Set[MemberStatus](Down, Exiting)
+  private val skipMemberStatus: Set[MemberStatus] = Set[MemberStatus](Down, Exiting)
 
   private var scheduledUnreachable: Map[Member, Cancellable] = Map.empty
   private var pendingUnreachable: Set[Member]                = Set.empty
@@ -69,36 +69,35 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
     case _: ClusterDomainEvent =>
   }
 
-  def initialize(state: CurrentClusterState) = {}
+  def initialize(state: CurrentClusterState): Unit = {}
 
-  def unreachableMember(m: Member): Unit =
+  protected def unreachableMember(m: Member): Unit =
     if (!skipMemberStatus(m.status) && !scheduledUnreachable.contains(m))
       scheduleUnreachable(m)
 
-  def scheduleUnreachable(m: Member): Unit = {
-    if (autoDownUnreachableAfter == Duration.Zero) {
+  private def scheduleUnreachable(m: Member): Unit =
+    if (autoDownUnreachableAfter == Duration.Zero)
       downOrAddPending(m)
-    } else {
+    else {
       val task = scheduler.scheduleOnce(autoDownUnreachableAfter, self, UnreachableTimeout(m))
       scheduledUnreachable += (m -> task)
     }
-  }
 
-  def remove(member: Member): Unit = {
+  protected def remove(member: Member): Unit = {
     scheduledUnreachable.get(member) foreach { _.cancel }
     scheduledUnreachable -= member
     pendingUnreachable -= member
     unstableUnreachable -= member
   }
 
-  def scheduledUnreachableMembers: Map[Member, Cancellable] =
+  protected def scheduledUnreachableMembers: Map[Member, Cancellable] =
     scheduledUnreachable
 
-  def pendingUnreachableMembers: Set[Member] = pendingUnreachable
+  protected def pendingUnreachableMembers: Set[Member] = pendingUnreachable
 
-  def pendingAsUnreachable(member: Member): Unit = pendingUnreachable += member
+  protected def pendingAsUnreachable(member: Member): Unit = pendingUnreachable += member
 
-  def downPendingUnreachableMembers(): Unit = {
+  protected def downPendingUnreachableMembers(): Unit = {
     val (head, tail) = pendingUnreachable.splitAt(1)
     head.foreach { member =>
       down(member.address)
@@ -106,5 +105,5 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
     pendingUnreachable = tail
   }
 
-  def unstableUnreachableMembers: Set[Member] = unstableUnreachable
+  protected def unstableUnreachableMembers: Set[Member] = unstableUnreachable
 }

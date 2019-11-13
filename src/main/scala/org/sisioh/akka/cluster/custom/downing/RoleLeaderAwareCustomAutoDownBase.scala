@@ -19,7 +19,7 @@ abstract class RoleLeaderAwareCustomAutoDownBase(autoDownUnreachableAfter: Finit
 
   override def receiveEvent: Receive = {
     case RoleLeaderChanged(role, leaderOption) =>
-      roleLeader = roleLeader + (role -> leaderOption.contains(selfAddress))
+      roleLeader += (role -> leaderOption.contains(selfAddress))
       if (isRoleLeaderOf(role)) {
         log.info("This node is the new role leader for role {}", role)
       }
@@ -39,4 +39,5 @@ abstract class RoleLeaderAwareCustomAutoDownBase(autoDownUnreachableAfter: Finit
     roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
     super.initialize(state)
   }
+
 }
