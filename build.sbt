@@ -5,7 +5,6 @@ lazy val root = (project in file("."))
     name := "akka-cluster-custom-downing",
     organization := "org.sisioh",
     sonatypeProfileName := "org.sisioh",
-    homepage := Some(url("https://github.com/sisioh/akka-cluster-custom-downing")),
     scalaVersion := "2.13.1",
     crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.1"),
     scalacOptions ++= Seq(
