@@ -5,7 +5,6 @@ lazy val root = (project in file("."))
     name := "akka-cluster-custom-downing",
     organization := "org.sisioh",
     sonatypeProfileName := "org.sisioh",
-    licenses += "Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html"),
     homepage := Some(url("https://github.com/sisioh/akka-cluster-custom-downing")),
     scalaVersion := "2.13.1",
     crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.1"),
@@ -60,7 +59,7 @@ lazy val root = (project in file("."))
       false
     },
     pomExtra := {
-      <url>https://github.com/sisioh/akka-cluster-custom-dowing</url>
+      <url>https://github.com/sisioh/akka-cluster-custom-downing</url>
         <licenses>
           <license>
             <name>Apache-2.0</name>
@@ -68,7 +67,7 @@ lazy val root = (project in file("."))
           </license>
         </licenses>
         <scm>
-          <url>git@github.com:sisioh/akka-cluster-custom-dowing.git</url>
+          <url>git@github.com:sisioh/akka-cluster-custom-downing.git</url>
           <connection>scm:git:github.com/sisioh/akka-cluster-custom-downing</connection>
           <developerConnection>scm:git:git@github.com:sisioh/akka-cluster-custom-downing.git</developerConnection>
         </scm>
