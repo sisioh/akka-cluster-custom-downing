@@ -5,7 +5,7 @@ import akka.remote.testkit.MultiNodeConfig
 import com.typesafe.config.ConfigFactory
 
 final case class MultiNodeOldestAutoDownSpecConfig(
-  failureDetectorPuppet: Boolean
+    failureDetectorPuppet: Boolean
 ) extends MultiNodeConfig {
   val nodeA = role("master")
   val nodeB = role("nodeB")
@@ -14,7 +14,7 @@ final case class MultiNodeOldestAutoDownSpecConfig(
   commonConfig(
     ConfigFactory
       .parseString("""
-          |akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.OldestAutoDowning"
+          |akka.cluster.downing-provider-class = "org.sisioh.akka.cluster.custom.downing.OldestAutoDowning"
           |custom-downing {
           |  stable-after = 1s
           |
