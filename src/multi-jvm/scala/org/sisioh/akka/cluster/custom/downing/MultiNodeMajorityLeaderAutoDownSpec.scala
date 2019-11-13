@@ -4,27 +4,58 @@
   * original source code is at https://github.com/akka/akka/blob/master/akka-cluster/src/multi-jvm/scala/akka/cluster/LeaderDowningNodeThatIsUnreachableSpec.scala
   */
 
-package tanukki.akka.cluster.autodown
+package org.sisioh.akka.cluster.custom.downing
 
-import akka.cluster.{MemberStatus, MultiNodeClusterSpec}
-import akka.remote.testkit.{STMultiNodeSpec, MultiNodeSpec}
+import akka.cluster.MultiNodeClusterSpec
+import akka.remote.testkit.{ MultiNodeSpec, STMultiNodeSpec }
 import akka.testkit.LongRunningTest
+
 import scala.concurrent.duration._
 
-class MajorityLeaderAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode1 extends MultiNodeMajorityLeaderAutoDownSpec(MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = true))
-class MajorityLeaderAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode2 extends MultiNodeMajorityLeaderAutoDownSpec(MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = true))
-class MajorityLeaderAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode3 extends MultiNodeMajorityLeaderAutoDownSpec(MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = true))
-class MajorityLeaderAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode4 extends MultiNodeMajorityLeaderAutoDownSpec(MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = true))
-class MajorityLeaderAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode5 extends MultiNodeMajorityLeaderAutoDownSpec(MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = true))
+class MajorityLeaderAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode1
+    extends MultiNodeMajorityLeaderAutoDownSpec(MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = true))
 
-class MajorityLeaderAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode1 extends MultiNodeMajorityLeaderAutoDownSpec(MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = false))
-class MajorityLeaderAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode2 extends MultiNodeMajorityLeaderAutoDownSpec(MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = false))
-class MajorityLeaderAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode3 extends MultiNodeMajorityLeaderAutoDownSpec(MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = false))
-class MajorityLeaderAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode4 extends MultiNodeMajorityLeaderAutoDownSpec(MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = false))
-class MajorityLeaderAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode5 extends MultiNodeMajorityLeaderAutoDownSpec(MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = false))
+class MajorityLeaderAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode2
+    extends MultiNodeMajorityLeaderAutoDownSpec(MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = true))
 
-abstract class MultiNodeMajorityLeaderAutoDownSpec(multiNodeConfig: MultiNodeMajorityLeaderAutoDownSpecConfig) extends MultiNodeSpec(multiNodeConfig)
-with STMultiNodeSpec with MultiNodeClusterSpec {
+class MajorityLeaderAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode3
+    extends MultiNodeMajorityLeaderAutoDownSpec(MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = true))
+
+class MajorityLeaderAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode4
+    extends MultiNodeMajorityLeaderAutoDownSpec(MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = true))
+
+class MajorityLeaderAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode5
+    extends MultiNodeMajorityLeaderAutoDownSpec(MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = true))
+
+class MajorityLeaderAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode1
+    extends MultiNodeMajorityLeaderAutoDownSpec(
+      MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = false)
+    )
+
+class MajorityLeaderAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode2
+    extends MultiNodeMajorityLeaderAutoDownSpec(
+      MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = false)
+    )
+
+class MajorityLeaderAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode3
+    extends MultiNodeMajorityLeaderAutoDownSpec(
+      MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = false)
+    )
+
+class MajorityLeaderAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode4
+    extends MultiNodeMajorityLeaderAutoDownSpec(
+      MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = false)
+    )
+
+class MajorityLeaderAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode5
+    extends MultiNodeMajorityLeaderAutoDownSpec(
+      MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet = false)
+    )
+
+abstract class MultiNodeMajorityLeaderAutoDownSpec(multiNodeConfig: MultiNodeMajorityLeaderAutoDownSpecConfig)
+    extends MultiNodeSpec(multiNodeConfig)
+    with STMultiNodeSpec
+    with MultiNodeClusterSpec {
   import multiNodeConfig._
 
   muteMarkingAsUnreachable()
@@ -94,7 +125,7 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
     }
 
     "DOWN itself when in minority" taggedAs LongRunningTest in {
-      val thirdAddress = address(nodeC)
+      val thirdAddress  = address(nodeC)
       val fourthAddress = address(nodeD)
 
       enterBarrier("before-down-third-node")
@@ -104,7 +135,7 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
         testConductor.exit(nodeD, 0).await
         enterBarrier("down-third-node")
 
-         // mark the node as unreachable in the failure detector
+        // mark the node as unreachable in the failure detector
         markNodeAsUnavailable(thirdAddress)
         markNodeAsUnavailable(fourthAddress)
 

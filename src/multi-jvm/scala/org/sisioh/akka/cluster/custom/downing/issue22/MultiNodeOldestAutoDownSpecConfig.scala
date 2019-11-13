@@ -1,4 +1,4 @@
-package tanukki.akka.cluster.autodown.issue22
+package org.sisioh.akka.cluster.custom.downing.issue22
 
 import akka.cluster.MultiNodeClusterSpec
 import akka.remote.testkit.MultiNodeConfig

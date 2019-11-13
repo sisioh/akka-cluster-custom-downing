@@ -1,28 +1,48 @@
-package tanukki.akka.cluster.autodown
+package org.sisioh.akka.cluster.custom.downing
 
-import akka.cluster.{Member, MemberStatus, MultiNodeClusterSpec}
+import akka.cluster.{ Member, MultiNodeClusterSpec }
 import akka.remote.testconductor.RoleName
-import akka.remote.testkit.{STMultiNodeSpec, MultiNodeSpec}
+import akka.remote.testkit.{ MultiNodeSpec, STMultiNodeSpec }
 import akka.testkit.LongRunningTest
+
 import scala.collection.immutable
 import scala.collection.immutable.SortedSet
 import scala.concurrent.duration._
 
+class OldestAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode1
+    extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = true))
 
-class OldestAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode1 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = true))
-class OldestAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode2 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = true))
-class OldestAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode3 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = true))
-class OldestAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode4 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = true))
-class OldestAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode5 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = true))
+class OldestAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode2
+    extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = true))
 
-class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode1 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
-class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode2 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
-class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode3 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
-class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode4 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
-class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode5 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
+class OldestAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode3
+    extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = true))
 
-abstract class MultiNodeOldestAutoDownSpec(multiNodeConfig: MultiNodeOldestAutoDownSpecConfig) extends MultiNodeSpec(multiNodeConfig)
-with STMultiNodeSpec with MultiNodeClusterSpec {
+class OldestAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode4
+    extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = true))
+
+class OldestAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode5
+    extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = true))
+
+class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode1
+    extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
+
+class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode2
+    extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
+
+class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode3
+    extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
+
+class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode4
+    extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
+
+class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode5
+    extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
+
+abstract class MultiNodeOldestAutoDownSpec(multiNodeConfig: MultiNodeOldestAutoDownSpecConfig)
+    extends MultiNodeSpec(multiNodeConfig)
+    with STMultiNodeSpec
+    with MultiNodeClusterSpec {
   import multiNodeConfig._
 
   muteMarkingAsUnreachable()
@@ -32,15 +52,15 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
     "be able to DOWN a 'last' node that is UNREACHABLE" taggedAs LongRunningTest in {
       awaitClusterUp(nodeA, nodeB, nodeC, nodeD, nodeE)
 
-      val second = membersByAge.slice(1, 2).head
+      val second     = membersByAge.slice(1, 2).head
       val secondRole = roleByMember(second)
-      val third = membersByAge.slice(2, 3).head
-      val thirdRole = roleByMember(third)
-      val forth = membersByAge.slice(3, 4).head
-      val forthRole = roleByMember(forth)
-      val fifth = membersByAge.last
-      val fifthRole = roleByMember(fifth)
-      val oldest = roleByMember(membersByAge.head)
+      val third      = membersByAge.slice(2, 3).head
+      val thirdRole  = roleByMember(third)
+      val forth      = membersByAge.slice(3, 4).head
+      val forthRole  = roleByMember(forth)
+      val fifth      = membersByAge.last
+      val fifthRole  = roleByMember(fifth)
+      val oldest     = roleByMember(membersByAge.head)
 
       enterBarrier("before-exit-fourth-node")
       runOn(nodeA) {
@@ -68,13 +88,13 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
     }
 
     "be able to DOWN a 'middle' node that is UNREACHABLE" taggedAs LongRunningTest in {
-      val second = membersByAge.slice(1, 2).head
+      val second     = membersByAge.slice(1, 2).head
       val secondRole = roleByMember(second)
-      val third = membersByAge.slice(2, 3).head
-      val thirdRole = roleByMember(third)
-      val forth = membersByAge.slice(3, 4).head
-      val forthRole = roleByMember(forth)
-      val oldest = roleByMember(membersByAge.head)
+      val third      = membersByAge.slice(2, 3).head
+      val thirdRole  = roleByMember(third)
+      val forth      = membersByAge.slice(3, 4).head
+      val forthRole  = roleByMember(forth)
+      val oldest     = roleByMember(membersByAge.head)
 
       enterBarrier("before-down-second-node")
       runOn(nodeA) {
@@ -102,11 +122,11 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
     }
 
     "DOWN oldest when oldest alone is unreachable" taggedAs LongRunningTest in {
-      val second = membersByAge.slice(1, 2).head
+      val second     = membersByAge.slice(1, 2).head
       val secondRole = roleByMember(second)
-      val third = membersByAge.slice(2, 3).head
-      val thirdRole = roleByMember(third)
-      val oldest = roleByMember(membersByAge.head)
+      val third      = membersByAge.slice(2, 3).head
+      val thirdRole  = roleByMember(third)
+      val oldest     = roleByMember(membersByAge.head)
 
       enterBarrier("before-down-third-node")
 
@@ -138,11 +158,11 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
     }
 
     "DOWN whole cluster when oldest is down" taggedAs LongRunningTest ignore {
-      val second = membersByAge.slice(1, 2).head
+      val second     = membersByAge.slice(1, 2).head
       val secondRole = roleByMember(second)
-      val third = membersByAge.slice(2, 3).head
-      val thirdRole = roleByMember(third)
-      val oldest = roleByMember(membersByAge.head)
+      val third      = membersByAge.slice(2, 3).head
+      val thirdRole  = roleByMember(third)
+      val oldest     = roleByMember(membersByAge.head)
 
       enterBarrier("before-down-third-node")
 
@@ -190,4 +210,3 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
   def isFirst(roleName: RoleName): Boolean = address(roleName) == address(nodeA)
 
 }
-
