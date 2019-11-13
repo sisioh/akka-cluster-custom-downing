@@ -18,7 +18,6 @@ lazy val root = (project in file("."))
         "-language:postfixOps",
         "-language:higherKinds"
       ),
-    licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
         "com.typesafe.akka" %% "akka-actor"   % akkaVersion,
         "com.typesafe.akka" %% "akka-cluster" % akkaVersion,
