@@ -55,9 +55,7 @@ I hope to know how you use them.
 For sbt, add following lines to build.sbt.
 
 ```
-resolvers += Resolver.bintrayRepo("tanukkii007", "maven")
-
-libraryDependencies += "com.github.TanUkkii007" %% "akka-cluster-custom-downing" % "0.0.13"
+libraryDependencies += "org.sisioh" %% "akka-cluster-custom-downing" % "0.0.14"
 ```
 
 Scala 2.11, 2.12 and 2.13 are supported.
