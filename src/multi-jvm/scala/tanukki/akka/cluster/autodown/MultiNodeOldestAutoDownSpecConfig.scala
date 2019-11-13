@@ -4,7 +4,6 @@ import akka.cluster.MultiNodeClusterSpec
 import akka.remote.testkit.MultiNodeConfig
 import com.typesafe.config.ConfigFactory
 
-
 final case class MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet: Boolean) extends MultiNodeConfig {
   val nodeA = role("nodeA")
   val nodeB = role("nodeB")
@@ -12,9 +11,10 @@ final case class MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet: Boolea
   val nodeD = role("nodeD")
   val nodeE = role("nodeE")
 
-  commonConfig(ConfigFactory.parseString(
-    """
-      |akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.OldestAutoDowning"
+  commonConfig(
+    ConfigFactory
+      .parseString("""
+      |akka.cluster.downing-provider-class = "org.sisioh.akka.cluster.custom.downing.OldestAutoDowning"
       |custom-downing {
       |  stable-after = 1s
       |
@@ -28,11 +28,10 @@ final case class MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet: Boolea
       |akka.actor.warn-about-java-serializer-usage = off
       |akka.remote.log-remote-lifecycle-events = off
     """.stripMargin)
-    .withFallback(MultiNodeClusterSpec.clusterConfig(failureDetectorPuppet))
+      .withFallback(MultiNodeClusterSpec.clusterConfig(failureDetectorPuppet))
   )
 
-  nodeConfig(nodeA, nodeB, nodeC, nodeD, nodeE)(ConfigFactory.parseString(
-    """
+  nodeConfig(nodeA, nodeB, nodeC, nodeD, nodeE)(ConfigFactory.parseString("""
       |akka.cluster {
       |  roles = [role]
       |}

@@ -73,7 +73,7 @@ If `oldest-member-role` is not specified, the oldest member among all cluster me
 You can enable this strategy with following configuration.
 
 ```
-akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.OldestAutoDowning"
+akka.cluster.downing-provider-class = "org.sisioh.akka.cluster.custom.downing.OldestAutoDowning"
 
 custom-downing {
   stable-after = 20s
@@ -103,7 +103,7 @@ If `role` is specified, the number of remaining members in the role is used to b
 
 ```scala
 
-akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.QuorumLeaderAutoDowning"
+akka.cluster.downing-provider-class = org.sisioh.akka.cluster.custom.downing.QuorumLeaderAutoDowningoDowning"
 
 custom-downing {
   stable-after = 20s
@@ -126,7 +126,7 @@ If a role is set by `majority-member-role`, the strategy is only enforced to the
 
 ```scala
 
-akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.MajorityLeaderAutoDowning"
+akka.cluster.downing-provider-class = oorg.sisioh.akka.cluster.custom.downing.MajorityLeaderAutoDowningoDowning
 
 custom-downing {
   stable-after = 20s
@@ -163,7 +163,7 @@ Like `akka.cluster.AutoDowning`, which is provided with Akka Cluster, a node res
 You can enable this strategy with following configuration.
 
 ```
-akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.LeaderAutoDowningRoles"
+akka.cluster.downing-provider-class = "org.sisioh.akka.cluster.custom.downing.LeaderAutoDowningRoles"
 
 custom-downing {
   stable-after = 20s
@@ -183,7 +183,7 @@ A node responsible to down is the role leader of a specified role.
 You can enable this strategy with following configuration.
 
 ```
-akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.RoleLeaderAutoDowningRoles"
+akka.cluster.downing-provider-class = "org.sisioh.akka.cluster.custom.downing.RoleLeaderAutoDowningRoles"
 
 custom-downing {
   stable-after = 20s
