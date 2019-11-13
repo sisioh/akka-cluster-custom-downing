@@ -1,5 +1,8 @@
 #  akka-cluster-custom-downing
 [![CircleCI](https://circleci.com/gh/sisioh/akka-cluster-custom-downing.svg?style=svg)](https://circleci.com/gh/sisioh/akka-cluster-custom-downing)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.sisioh/akka-cluster-custom-downing_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.sisioh/akka-cluster-custom-downing_2.11)
+[![Scaladoc](http://javadoc-badge.appspot.com/org.sisioh/akka-cluster-custom-downing.svg?label=scaladoc)](http://javadoc-badge.appspot.com/org.sisioh/akka-cluster-custom-downing_2.11)
+[![Reference Status](https://www.versioneye.com/java/org.sisioh:akka-cluster-custom-downing_2.11/reference_badge.svg?style=flat)](https://www.versioneye.com/java/org.sisioh:akka-cluster-custom-downing_2.11/references)
 
 ## Introduction
 
