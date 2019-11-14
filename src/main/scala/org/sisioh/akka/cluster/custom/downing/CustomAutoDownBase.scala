@@ -2,6 +2,7 @@
   * Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
   *
   * 2016- Modified by Yusuke Yasuda
+  * 2019- Modified by Junichi Kato
   * The original source code can be found here.
   * https://github.com/akka/akka/blob/master/akka-cluster/src/main/scala/akka/cluster/AutoDown.scala
   */
@@ -16,6 +17,7 @@ import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 object CustomDowning {
   case class UnreachableTimeout(member: Member)
+  private[downing] val skipMemberStatus: Set[MemberStatus] = Set[MemberStatus](Down, Exiting)
 }
 
 abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) extends Actor {
@@ -33,8 +35,6 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
   protected def scheduler: Scheduler
 
   import context.dispatcher
-
-  private val skipMemberStatus: Set[MemberStatus] = Set[MemberStatus](Down, Exiting)
 
   private var scheduledUnreachable: Map[Member, Cancellable] = Map.empty
   private var pendingUnreachable: Set[Member]                = Set.empty

@@ -1,3 +1,7 @@
+/**
+  * Copyright (C) 2016- Yuske Yasuda
+  * Copyright (C) 2019- SISIOH Project
+  */
 package org.sisioh.akka.cluster.custom.downing
 
 import akka.actor.Address
@@ -15,7 +19,7 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
 
   private val log = Logging(context.system, this)
 
-  private var leader                           = false
+  private var leader: Boolean                  = false
   private var roleLeader: Map[String, Boolean] = Map.empty
 
   private var membersByAge: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ageOrdering)

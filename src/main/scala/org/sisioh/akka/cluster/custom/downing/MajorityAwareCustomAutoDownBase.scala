@@ -1,3 +1,11 @@
+/**
+  * Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
+  *
+  * 2016- Modified by Yusuke Yasuda
+  * 2019- Modified by Junichi Kato
+  * The original source code can be found here.
+  * https://github.com/akka/akka/blob/master/akka-cluster/src/main/scala/akka/cluster/AutoDown.scala
+  */
 package org.sisioh.akka.cluster.custom.downing
 
 import akka.actor.Address
