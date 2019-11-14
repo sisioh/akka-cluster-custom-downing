@@ -36,12 +36,12 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
 
   import context.dispatcher
 
-  private var scheduledUnreachable: Map[Member, Cancellable] = Map.empty
-  private var pendingUnreachable: Members                    = Members.empty
-  private var unstableUnreachable: Members                   = Members.empty
+  private var scheduledUnreachable: MemberCancellables = MemberCancellables.empty
+  private var pendingUnreachable: Members              = Members.empty
+  private var unstableUnreachable: Members             = Members.empty
 
   override def postStop(): Unit = {
-    scheduledUnreachable.values foreach { _.cancel }
+    scheduledUnreachable.cancelAll()
     super.postStop()
   }
 
@@ -92,13 +92,13 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
     }
 
   protected def remove(member: Member): Unit = {
-    scheduledUnreachable.get(member) foreach { _.cancel }
+    scheduledUnreachable.cancel(member)
     scheduledUnreachable -= member
     pendingUnreachable -= member
     unstableUnreachable -= member
   }
 
-  protected def scheduledUnreachableMembers: Map[Member, Cancellable] =
+  protected def scheduledUnreachableMembers: MemberCancellables =
     scheduledUnreachable
 
   protected def pendingUnreachableMembers: Members = pendingUnreachable
