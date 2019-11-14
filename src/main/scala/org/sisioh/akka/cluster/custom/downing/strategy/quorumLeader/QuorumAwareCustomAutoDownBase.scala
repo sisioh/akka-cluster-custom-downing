@@ -8,7 +8,7 @@ import akka.cluster.ClusterEvent._
 import akka.cluster.{ Member, MemberStatus }
 import akka.event.Logging
 import org.sisioh.akka.cluster.custom.downing.SplitBrainResolver
-import org.sisioh.akka.cluster.custom.downing.strategy.CustomAutoDownBase
+import org.sisioh.akka.cluster.custom.downing.strategy.{ CustomAutoDownBase, Members }
 
 import scala.collection.immutable
 import scala.collection.immutable.SortedSet
@@ -101,7 +101,7 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
     ms.size >= quorumSize
   }
 
-  def isQuorumMetAfterDown(members: Set[Member], role: Option[String]): Boolean = {
+  def isQuorumMetAfterDown(members: Members, role: Option[String]): Boolean = {
     val minus =
       if (role.isEmpty) members.size
       else {

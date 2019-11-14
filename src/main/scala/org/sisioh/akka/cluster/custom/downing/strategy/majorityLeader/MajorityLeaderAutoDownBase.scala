@@ -7,6 +7,7 @@ package org.sisioh.akka.cluster.custom.downing.strategy.majorityLeader
 import akka.actor.Address
 import akka.cluster.MemberStatus.Down
 import akka.cluster.{ Member, MemberStatus }
+import org.sisioh.akka.cluster.custom.downing.strategy.Members
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -44,7 +45,7 @@ abstract class MajorityLeaderAutoDownBase(
     } else
       pendingAsUnreachable(member)
 
-  override protected def downOrAddPendingAll(members: Set[Member]): Unit = {
+  override protected def downOrAddPendingAll(members: Members): Unit = {
     if (isMajorityAfterDown(members, majorityMemberRole)) {
       members.foreach(downOrAddPending)
     } else if (downIfInMinority) {

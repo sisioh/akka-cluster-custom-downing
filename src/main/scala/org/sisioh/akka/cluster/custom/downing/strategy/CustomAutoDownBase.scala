@@ -30,15 +30,15 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
 
   protected def downOrAddPending(member: Member): Unit
 
-  protected def downOrAddPendingAll(members: Set[Member]): Unit
+  protected def downOrAddPendingAll(members: Members): Unit
 
   protected def scheduler: Scheduler
 
   import context.dispatcher
 
   private var scheduledUnreachable: Map[Member, Cancellable] = Map.empty
-  private var pendingUnreachable: Set[Member]                = Set.empty
-  private var unstableUnreachable: Set[Member]               = Set.empty
+  private var pendingUnreachable: Members                    = Members.empty
+  private var unstableUnreachable: Members                   = Members.empty
 
   override def postStop(): Unit = {
     scheduledUnreachable.values foreach { _.cancel }
@@ -60,7 +60,7 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
         if (scheduledUnreachable.isEmpty) {
           unstableUnreachable += member
           downOrAddPendingAll(unstableUnreachable)
-          unstableUnreachable = Set.empty
+          unstableUnreachable = Members.empty
         } else {
           unstableUnreachable += member
         }
@@ -101,17 +101,17 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
   protected def scheduledUnreachableMembers: Map[Member, Cancellable] =
     scheduledUnreachable
 
-  protected def pendingUnreachableMembers: Set[Member] = pendingUnreachable
+  protected def pendingUnreachableMembers: Members = pendingUnreachable
 
   protected def pendingAsUnreachable(member: Member): Unit = pendingUnreachable += member
 
   protected def downPendingUnreachableMembers(): Unit = {
-    val (head, tail) = pendingUnreachable.splitAt(1)
+    val (head, tail) = pendingUnreachable.splitHeadAndTail
     head.foreach { member =>
       down(member.address)
     }
     pendingUnreachable = tail
   }
 
-  protected def unstableUnreachableMembers: Set[Member] = unstableUnreachable
+  protected def unstableUnreachableMembers: Members = unstableUnreachable
 }
