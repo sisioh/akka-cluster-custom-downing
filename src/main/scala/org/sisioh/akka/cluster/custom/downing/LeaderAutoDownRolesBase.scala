@@ -12,7 +12,7 @@ import scala.concurrent.duration.FiniteDuration
 abstract class LeaderAutoDownRolesBase(targetRoles: Set[String], autoDownUnreachableAfter: FiniteDuration)
     extends LeaderAwareCustomAutoDownBase(autoDownUnreachableAfter) {
 
-  override def onLeaderChanged(leader: Option[Address]): Unit =
+  override protected def onLeaderChanged(leader: Option[Address]): Unit =
     if (isLeader) downPendingUnreachableMembers()
 
   override protected def downOrAddPending(member: Member): Unit =

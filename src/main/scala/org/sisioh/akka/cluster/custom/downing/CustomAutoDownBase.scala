@@ -16,7 +16,7 @@ import akka.cluster._
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 object CustomDowning {
-  case class UnreachableTimeout(member: Member)
+  private[downing] case class UnreachableTimeout(member: Member)
   private[downing] val skipMemberStatus: Set[MemberStatus] = Set[MemberStatus](Down, Exiting)
 }
 
@@ -45,11 +45,11 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
     super.postStop()
   }
 
-  def receiveEvent: Receive
+  override def receive: Receive = receiveEvent orElse predefinedReceiveEvent
 
-  def receive: Receive = receiveEvent orElse predefinedReceiveEvent
+  protected def receiveEvent: Receive
 
-  def predefinedReceiveEvent: Receive = {
+  private def predefinedReceiveEvent: Receive = {
     case state: CurrentClusterState =>
       initialize(state)
       state.unreachable foreach unreachableMember
@@ -69,7 +69,15 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
     case _: ClusterDomainEvent =>
   }
 
-  def initialize(state: CurrentClusterState): Unit = {}
+  protected def initialize(state: CurrentClusterState): Unit = {}
+
+  protected def onMemberDowned(member: Member): Unit = {}
+
+  protected def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {}
+
+  protected def onLeaderChanged(leader: Option[Address]): Unit = {}
+
+  protected def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {}
 
   protected def unreachableMember(m: Member): Unit =
     if (!skipMemberStatus(m.status) && !scheduledUnreachable.contains(m))

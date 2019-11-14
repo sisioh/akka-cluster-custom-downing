@@ -15,7 +15,7 @@ abstract class RoleLeaderAutoDownRolesBase(
     autoDownUnreachableAfter: FiniteDuration
 ) extends RoleLeaderAwareCustomAutoDownBase(autoDownUnreachableAfter) {
 
-  override def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit =
+  override protected def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit =
     if (leaderRole == role && isRoleLeaderOf(leaderRole))
       downPendingUnreachableMembers()
 

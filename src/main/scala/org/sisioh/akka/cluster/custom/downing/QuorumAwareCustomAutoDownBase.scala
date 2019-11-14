@@ -4,7 +4,6 @@
   */
 package org.sisioh.akka.cluster.custom.downing
 
-import akka.actor.Address
 import akka.cluster.ClusterEvent._
 import akka.cluster.{ Member, MemberStatus }
 import akka.event.Logging
@@ -24,7 +23,7 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
 
   private var membersByAge: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ageOrdering)
 
-  override def receiveEvent: Receive = {
+  override protected def receiveEvent: Receive = {
     case LeaderChanged(leaderOption) =>
       leader = leaderOption.contains(selfAddress)
       if (isLeader) {
@@ -61,17 +60,11 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
       onMemberRemoved(m, prev)
   }
 
-  def isLeader: Boolean = leader
+  protected def isLeader: Boolean = leader
 
-  def isRoleLeaderOf(role: String): Boolean = roleLeader.getOrElse(role, false)
+  protected def isRoleLeaderOf(role: String): Boolean = roleLeader.getOrElse(role, false)
 
-  def onLeaderChanged(leader: Option[Address]): Unit = {}
-
-  def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {}
-
-  def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {}
-
-  override def initialize(state: CurrentClusterState): Unit = {
+  override protected def initialize(state: CurrentClusterState): Unit = {
     leader = state.leader.contains(selfAddress)
     roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
     membersByAge = immutable.SortedSet.empty(Member.ageOrdering) union state.members.filterNot { m =>
@@ -80,16 +73,16 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
     super.initialize(state)
   }
 
-  def replaceMember(member: Member): Unit = {
+  protected def replaceMember(member: Member): Unit = {
     membersByAge -= member
     membersByAge += member
   }
 
-  def removeMember(member: Member): Unit = {
+  protected def removeMember(member: Member): Unit = {
     membersByAge -= member
   }
 
-  def isLeaderOf(quorumRole: Option[String]): Boolean = quorumRole.fold(isLeader)(isRoleLeaderOf)
+  protected def isLeaderOf(quorumRole: Option[String]): Boolean = quorumRole.fold(isLeader)(isRoleLeaderOf)
 
   def targetMember: SortedSet[Member] = membersByAge.filter { m =>
     (m.status == MemberStatus.Up || m.status == MemberStatus.Leaving) &&
