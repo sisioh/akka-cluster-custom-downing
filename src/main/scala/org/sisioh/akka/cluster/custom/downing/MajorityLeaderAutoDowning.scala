@@ -7,7 +7,7 @@ import com.typesafe.config.Config
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class MajorityLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
+final class MajorityLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
 
   private val config: Config = system.settings.config
 

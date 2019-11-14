@@ -8,7 +8,7 @@ import com.typesafe.config.Config
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class OldestAutoDowning(system: ActorSystem) extends DowningProvider {
+final class OldestAutoDowning(system: ActorSystem) extends DowningProvider {
 
   private val config: Config = system.settings.config
 
