@@ -7,6 +7,7 @@ package org.sisioh.akka.cluster.custom.downing.strategy.quorumLeader
 import akka.actor.Address
 import akka.cluster.MemberStatus.Down
 import akka.cluster.{ Member, MemberStatus }
+import org.sisioh.akka.cluster.custom.downing.strategy.Members
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -47,7 +48,7 @@ abstract class QuorumLeaderAutoDownBase(
     }
   }
 
-  override protected def downOrAddPendingAll(members: Set[Member]): Unit = {
+  override protected def downOrAddPendingAll(members: Members): Unit = {
     if (isQuorumMetAfterDown(members, quorumRole)) {
       members.foreach(downOrAddPending)
     } else if (downIfOutOfQuorum) {

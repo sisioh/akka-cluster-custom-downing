@@ -12,7 +12,7 @@ import akka.cluster.ClusterEvent._
 import akka.cluster.{ Member, MemberStatus }
 import akka.event.Logging
 import org.sisioh.akka.cluster.custom.downing.SplitBrainResolver
-import org.sisioh.akka.cluster.custom.downing.strategy.CustomAutoDownBase
+import org.sisioh.akka.cluster.custom.downing.strategy.{ CustomAutoDownBase, Members }
 
 import scala.collection.immutable
 import scala.collection.immutable.SortedSet
@@ -103,7 +103,7 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
     okMembers.size > koMembers.size || isEqual && ms.headOption.map(okMembers.contains(_)).getOrElse(true)
   }
 
-  protected def isMajorityAfterDown(members: Set[Member], role: Option[String]): Boolean = {
+  protected def isMajorityAfterDown(members: Members, role: Option[String]): Boolean = {
     val minus =
       if (role.isEmpty) members
       else {
@@ -111,7 +111,7 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
         members.filter(_.hasRole(r))
       }
     val ms        = majorityMemberOf(role)
-    val okMembers = (ms filter isOK) -- minus
+    val okMembers = (ms filter isOK) -- minus.toSet
     val koMembers = ms -- okMembers
 
     val isEqual = okMembers.size == koMembers.size

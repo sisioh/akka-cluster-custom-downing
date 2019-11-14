@@ -6,6 +6,7 @@ package org.sisioh.akka.cluster.custom.downing.strategy.oldest
 
 import akka.cluster.MemberStatus.Down
 import akka.cluster.{ Member, MemberStatus }
+import org.sisioh.akka.cluster.custom.downing.strategy.Members
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -40,7 +41,7 @@ abstract class OldestAutoDownBase(
     }
   }
 
-  override protected def downOrAddPendingAll(members: Set[Member]): Unit = {
+  override protected def downOrAddPendingAll(members: Members): Unit = {
     val oldest = oldestMember(oldestMemberRole)
     if (downIfAlone && isOldestAlone(oldestMemberRole)) {
       if (isOldestOf(oldestMemberRole))

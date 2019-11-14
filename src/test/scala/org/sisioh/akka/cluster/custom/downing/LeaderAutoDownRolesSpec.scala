@@ -20,8 +20,8 @@ case class DownCalled(node: Address)
 
 object LeaderAutoDownRolesSpec {
 
-  val memberRoles = Set("testRole", "dc-1")
-  val testRoles   = Set("testRole")
+  val memberRoles: Set[String] = Set("testRole", "dc-1")
+  val testRoles: Set[String]   = Set("testRole")
 
   val memberA = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, memberRoles)
   val memberB = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, memberRoles)
