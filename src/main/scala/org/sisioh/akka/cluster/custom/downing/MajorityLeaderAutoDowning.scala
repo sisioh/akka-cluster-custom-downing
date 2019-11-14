@@ -1,13 +1,19 @@
+/**
+  * Copyright (C) 2016- Yuske Yasuda
+  * Copyright (C) 2019- SISIOH Project
+  */
 package org.sisioh.akka.cluster.custom.downing
 
 import akka.actor.{ ActorSystem, Address, Props }
-import akka.cluster.{ Cluster, DowningProvider }
+import akka.cluster.DowningProvider
 import com.typesafe.config.Config
+import org.sisioh.akka.cluster.custom.downing.strategy.ClusterCustomDowning
+import org.sisioh.akka.cluster.custom.downing.strategy.majorityLeader.MajorityLeaderAutoDownBase
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class MajorityLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
+final class MajorityLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
 
   private val config: Config = system.settings.config
 

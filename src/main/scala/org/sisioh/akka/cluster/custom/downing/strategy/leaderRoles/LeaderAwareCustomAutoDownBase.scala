@@ -1,8 +1,12 @@
-package org.sisioh.akka.cluster.custom.downing
+/**
+  * Copyright (C) 2016- Yuske Yasuda
+  * Copyright (C) 2019- SISIOH Project
+  */
+package org.sisioh.akka.cluster.custom.downing.strategy.leaderRoles
 
-import akka.actor.Address
 import akka.cluster.ClusterEvent._
 import akka.event.Logging
+import org.sisioh.akka.cluster.custom.downing.strategy.CustomAutoDownBase
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -13,11 +17,9 @@ abstract class LeaderAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
 
   private var leader: Boolean = false
 
-  def onLeaderChanged(leader: Option[Address]): Unit = {}
+  protected def isLeader: Boolean = leader
 
-  def isLeader: Boolean = leader
-
-  override def receiveEvent: Receive = {
+  override protected def receiveEvent: Receive = {
     case LeaderChanged(leaderOption) =>
       leader = leaderOption.contains(selfAddress)
       if (isLeader) {
@@ -30,12 +32,16 @@ abstract class LeaderAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
     case ReachableMember(m) =>
       log.info("{} is reachable", m)
       remove(m)
-    case MemberRemoved(m, _) =>
+    case MemberDowned(m) =>
+      log.info("{} was downed", m)
+      onMemberDowned(m)
+    case MemberRemoved(m, s) =>
       log.info("{} was removed from the cluster", m)
       remove(m)
+      onMemberRemoved(m, s)
   }
 
-  override def initialize(state: CurrentClusterState): Unit = {
+  override protected def initialize(state: CurrentClusterState): Unit = {
     leader = state.leader.contains(selfAddress)
     super.initialize(state)
   }

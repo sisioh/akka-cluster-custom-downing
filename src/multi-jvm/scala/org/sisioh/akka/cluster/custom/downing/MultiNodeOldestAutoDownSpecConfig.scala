@@ -13,7 +13,8 @@ final case class MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet: Boolea
 
   commonConfig(
     ConfigFactory
-      .parseString("""
+      .parseString(
+        """
       |akka.cluster.downing-provider-class = "org.sisioh.akka.cluster.custom.downing.OldestAutoDowning"
       |custom-downing {
       |  stable-after = 1s
@@ -27,7 +28,8 @@ final case class MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet: Boolea
       |akka.cluster.metrics.enabled=off
       |akka.actor.warn-about-java-serializer-usage = off
       |akka.remote.log-remote-lifecycle-events = off
-    """.stripMargin)
+    """.stripMargin
+      )
       .withFallback(MultiNodeClusterSpec.clusterConfig(failureDetectorPuppet))
   )
 

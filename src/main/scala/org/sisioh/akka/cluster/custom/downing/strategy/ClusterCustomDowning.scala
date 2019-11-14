@@ -1,4 +1,4 @@
-package org.sisioh.akka.cluster.custom.downing
+package org.sisioh.akka.cluster.custom.downing.strategy
 
 import akka.actor.{ ActorLogging, Address, Scheduler }
 import akka.cluster.Cluster

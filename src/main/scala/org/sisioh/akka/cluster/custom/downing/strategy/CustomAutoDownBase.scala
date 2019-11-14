@@ -2,10 +2,11 @@
   * Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
   *
   * 2016- Modified by Yusuke Yasuda
+  * 2019- Modified by Junichi Kato
   * The original source code can be found here.
   * https://github.com/akka/akka/blob/master/akka-cluster/src/main/scala/akka/cluster/AutoDown.scala
   */
-package org.sisioh.akka.cluster.custom.downing
+package org.sisioh.akka.cluster.custom.downing.strategy
 
 import akka.actor.{ Actor, Address, Cancellable, Scheduler }
 import akka.cluster.ClusterEvent._
@@ -15,11 +16,12 @@ import akka.cluster._
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 object CustomDowning {
-  case class UnreachableTimeout(member: Member)
+  private[downing] case class UnreachableTimeout(member: Member)
+  private[downing] val skipMemberStatus: Set[MemberStatus] = Set[MemberStatus](Down, Exiting)
 }
 
 abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) extends Actor {
-
+  autoDownUnreachableAfter.isFinite
   import CustomDowning._
 
   protected def selfAddress: Address
@@ -34,8 +36,6 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
 
   import context.dispatcher
 
-  private val skipMemberStatus: Set[MemberStatus] = Set[MemberStatus](Down, Exiting)
-
   private var scheduledUnreachable: Map[Member, Cancellable] = Map.empty
   private var pendingUnreachable: Set[Member]                = Set.empty
   private var unstableUnreachable: Set[Member]               = Set.empty
@@ -45,11 +45,11 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
     super.postStop()
   }
 
-  def receiveEvent: Receive
+  override def receive: Receive = receiveEvent orElse predefinedReceiveEvent
 
-  def receive: Receive = receiveEvent orElse predefinedReceiveEvent
+  protected def receiveEvent: Receive
 
-  def predefinedReceiveEvent: Receive = {
+  private def predefinedReceiveEvent: Receive = {
     case state: CurrentClusterState =>
       initialize(state)
       state.unreachable foreach unreachableMember
@@ -69,7 +69,15 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
     case _: ClusterDomainEvent =>
   }
 
-  def initialize(state: CurrentClusterState): Unit = {}
+  protected def initialize(state: CurrentClusterState): Unit = {}
+
+  protected def onMemberDowned(member: Member): Unit = {}
+
+  protected def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {}
+
+  protected def onLeaderChanged(leader: Option[Address]): Unit = {}
+
+  protected def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {}
 
   protected def unreachableMember(m: Member): Unit =
     if (!skipMemberStatus(m.status) && !scheduledUnreachable.contains(m))

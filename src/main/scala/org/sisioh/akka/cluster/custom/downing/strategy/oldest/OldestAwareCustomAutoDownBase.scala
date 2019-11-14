@@ -1,8 +1,14 @@
-package org.sisioh.akka.cluster.custom.downing
+/**
+  * Copyright (C) 2016- Yuske Yasuda
+  * Copyright (C) 2019- SISIOH Project
+  */
+package org.sisioh.akka.cluster.custom.downing.strategy.oldest
 
 import akka.cluster.ClusterEvent._
 import akka.cluster.{ Member, MemberStatus }
 import akka.event.Logging
+import org.sisioh.akka.cluster.custom.downing.SplitBrainResolver
+import org.sisioh.akka.cluster.custom.downing.strategy.CustomAutoDownBase
 
 import scala.collection.immutable
 import scala.collection.immutable.SortedSet
@@ -17,7 +23,7 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
   private var membersByAge: immutable.SortedSet[Member] =
     immutable.SortedSet.empty(Member.ageOrdering)
 
-  override def receiveEvent: Receive = {
+  override protected def receiveEvent: Receive = {
     case MemberUp(m) =>
       log.info("{} is up", m)
       replaceMember(m)
@@ -46,61 +52,57 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
       onMemberRemoved(m, prev)
   }
 
-  def onMemberDowned(member: Member): Unit = {}
-
-  def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {}
-
-  override def initialize(state: CurrentClusterState): Unit = {
+  override protected def initialize(state: CurrentClusterState): Unit = {
     membersByAge = immutable.SortedSet.empty(Member.ageOrdering) union state.members.filterNot { m =>
         m.status == MemberStatus.Removed
       }
     super.initialize(state)
   }
 
-  def replaceMember(member: Member): Unit = {
+  protected def replaceMember(member: Member): Unit = {
     membersByAge -= member
     membersByAge += member
   }
 
-  def removeMember(member: Member): Unit = {
+  protected def removeMember(member: Member): Unit = {
     membersByAge -= member
   }
 
-  def isAllIntermediateMemberRemoved(member: Member): Boolean = {
+  protected def isAllIntermediateMemberRemoved(member: Member): Boolean = {
     val isUnsafe = membersByAge.filterNot(_ == member).exists { m =>
       m.status == MemberStatus.Down || m.status == MemberStatus.Exiting
     }
     !isUnsafe
   }
 
-  def isAllIntermediateMemberRemoved: Boolean = {
+  protected def isAllIntermediateMemberRemoved: Boolean = {
     val isUnsafe = membersByAge.exists { m =>
       m.status == MemberStatus.Down || m.status == MemberStatus.Exiting
     }
     !isUnsafe
   }
 
-  def isOldestUnsafe(role: Option[String]): Boolean = {
+  protected def isOldestUnsafe(role: Option[String]): Boolean = {
     targetMembers(role).headOption.map(_.address).contains(selfAddress)
   }
 
-  def isOldest: Boolean = {
+  protected def isOldest: Boolean = {
     isAllIntermediateMemberRemoved && isOldestUnsafe(None)
   }
 
-  def isOldestWithout(member: Member): Boolean = {
+  protected def isOldestWithout(member: Member): Boolean = {
     isAllIntermediateMemberRemoved(member) && isOldestUnsafe(None)
   }
 
-  def isOldestOf(role: Option[String]): Boolean = {
+  protected def isOldestOf(role: Option[String]): Boolean = {
     isAllIntermediateMemberRemoved && isOldestUnsafe(role)
   }
 
-  def isOldestOf(role: Option[String], without: Member): Boolean = {
+  protected def isOldestOf(role: Option[String], without: Member): Boolean = {
     isAllIntermediateMemberRemoved(without) && isOldestUnsafe(role)
   }
 
-  def isOldestAlone(role: Option[String]): Boolean = {
+  protected def isOldestAlone(role: Option[String]): Boolean = {
     val tm = targetMembers(role)
     if (tm.isEmpty || tm.size == 1) true
     else {
@@ -114,14 +116,14 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
     }
   }
 
-  def isSecondaryOldest(role: Option[String]): Boolean = {
+  protected def isSecondaryOldest(role: Option[String]): Boolean = {
     val tm = targetMembers(role)
     if (tm.size >= 2) {
       tm.slice(1, 2).head.address == selfAddress
     } else false
   }
 
-  def oldestMember(role: Option[String]): Option[Member] =
+  protected def oldestMember(role: Option[String]): Option[Member] =
     targetMembers(role).headOption
 
   private def targetMembers(role: Option[String]): SortedSet[Member] = {

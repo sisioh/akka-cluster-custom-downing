@@ -1,4 +1,8 @@
-package org.sisioh.akka.cluster.custom.downing
+/**
+  * Copyright (C) 2016- Yuske Yasuda
+  * Copyright (C) 2019- SISIOH Project
+  */
+package org.sisioh.akka.cluster.custom.downing.strategy.quorumLeader
 
 import akka.actor.Address
 import akka.cluster.MemberStatus.Down
@@ -13,17 +17,17 @@ abstract class QuorumLeaderAutoDownBase(
     autoDownUnreachableAfter: FiniteDuration
 ) extends QuorumAwareCustomAutoDownBase(quorumSize, autoDownUnreachableAfter) {
 
-  override def onLeaderChanged(leader: Option[Address]): Unit = {
+  override protected def onLeaderChanged(leader: Option[Address]): Unit = {
     if (quorumRole.isEmpty && isLeader) downPendingUnreachableMembers()
   }
 
-  override def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {
+  override protected def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {
     quorumRole.foreach { r =>
       if (r == role && isRoleLeaderOf(r)) downPendingUnreachableMembers()
     }
   }
 
-  override def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
+  override protected def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
     if (isQuorumMet(quorumRole)) {
       if (isLeaderOf(quorumRole)) {
         downPendingUnreachableMembers()

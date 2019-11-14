@@ -1,4 +1,8 @@
-package org.sisioh.akka.cluster.custom.downing
+/**
+  * Copyright (C) 2016- Yuske Yasuda
+  * Copyright (C) 2019- SISIOH Project
+  */
+package org.sisioh.akka.cluster.custom.downing.strategy.roleLeaderRoles
 
 import akka.actor.Address
 import akka.cluster.Member
@@ -11,7 +15,7 @@ abstract class RoleLeaderAutoDownRolesBase(
     autoDownUnreachableAfter: FiniteDuration
 ) extends RoleLeaderAwareCustomAutoDownBase(autoDownUnreachableAfter) {
 
-  override def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit =
+  override protected def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit =
     if (leaderRole == role && isRoleLeaderOf(leaderRole))
       downPendingUnreachableMembers()
 

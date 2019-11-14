@@ -1,4 +1,8 @@
-package org.sisioh.akka.cluster.custom.downing
+/**
+  * Copyright (C) 2016- Yuske Yasuda
+  * Copyright (C) 2019- SISIOH Project
+  */
+package org.sisioh.akka.cluster.custom.downing.strategy.majorityLeader
 
 import akka.actor.Address
 import akka.cluster.MemberStatus.Down
@@ -12,17 +16,17 @@ abstract class MajorityLeaderAutoDownBase(
     autoDownUnreachableAfter: FiniteDuration
 ) extends MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter) {
 
-  override def onLeaderChanged(leader: Option[Address]): Unit = {
+  override protected def onLeaderChanged(leader: Option[Address]): Unit = {
     if (majorityMemberRole.isEmpty && isLeader) downPendingUnreachableMembers()
   }
 
-  override def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {
+  override protected def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {
     majorityMemberRole.foreach { r =>
       if (r == role && isRoleLeaderOf(r)) downPendingUnreachableMembers()
     }
   }
 
-  override def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
+  override protected def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
     if (isMajority(majorityMemberRole)) {
       if (isLeaderOf(majorityMemberRole)) {
         downPendingUnreachableMembers()
