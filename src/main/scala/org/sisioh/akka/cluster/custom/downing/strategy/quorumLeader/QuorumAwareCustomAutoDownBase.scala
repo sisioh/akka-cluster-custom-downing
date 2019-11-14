@@ -86,22 +86,22 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
 
   protected def isLeaderOf(quorumRole: Option[String]): Boolean = quorumRole.fold(isLeader)(isRoleLeaderOf)
 
-  def targetMember: SortedSet[Member] = membersByAge.filter { m =>
+  protected def targetMember: SortedSet[Member] = membersByAge.filter { m =>
     (m.status == MemberStatus.Up || m.status == MemberStatus.Leaving) &&
     !pendingUnreachableMembers.contains(m)
   }
 
-  def quorumMemberOf(role: Option[String]): SortedSet[Member] = {
+  protected def quorumMemberOf(role: Option[String]): SortedSet[Member] = {
     val ms = targetMember
     role.fold(ms)(r => ms.filter(_.hasRole(r)))
   }
 
-  def isQuorumMet(role: Option[String]): Boolean = {
+  protected def isQuorumMet(role: Option[String]): Boolean = {
     val ms = quorumMemberOf(role)
     ms.size >= quorumSize
   }
 
-  def isQuorumMetAfterDown(members: Members, role: Option[String]): Boolean = {
+  protected def isQuorumMetAfterDown(members: Members, role: Option[String]): Boolean = {
     val minus =
       if (role.isEmpty) members.size
       else {
@@ -112,6 +112,6 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
     ms.size - minus >= quorumSize
   }
 
-  def isUnreachableStable: Boolean = scheduledUnreachableMembers.isEmpty
+  protected def isUnreachableStable: Boolean = scheduledUnreachableMembers.isEmpty
 
 }
