@@ -7,6 +7,8 @@ package org.sisioh.akka.cluster.custom.downing
 import akka.actor.{ ActorSystem, Address, Props }
 import akka.cluster.{ Cluster, DowningProvider }
 import com.typesafe.config.Config
+import org.sisioh.akka.cluster.custom.downing.strategy.ClusterCustomDowning
+import org.sisioh.akka.cluster.custom.downing.strategy.leaderRoles.LeaderAutoDownRolesBase
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration.{ FiniteDuration, _ }

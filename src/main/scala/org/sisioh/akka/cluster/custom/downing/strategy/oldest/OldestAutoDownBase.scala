@@ -2,7 +2,7 @@
   * Copyright (C) 2016- Yuske Yasuda
   * Copyright (C) 2019- SISIOH Project
   */
-package org.sisioh.akka.cluster.custom.downing
+package org.sisioh.akka.cluster.custom.downing.strategy.oldest
 
 import akka.cluster.MemberStatus.Down
 import akka.cluster.{ Member, MemberStatus }

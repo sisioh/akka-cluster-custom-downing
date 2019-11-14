@@ -6,8 +6,10 @@ package org.sisioh.akka.cluster.custom.downing
 
 import akka.ConfigurationException
 import akka.actor.{ ActorSystem, Address, Props }
-import akka.cluster.{ Cluster, DowningProvider }
+import akka.cluster.DowningProvider
 import com.typesafe.config.Config
+import org.sisioh.akka.cluster.custom.downing.strategy.ClusterCustomDowning
+import org.sisioh.akka.cluster.custom.downing.strategy.oldest.OldestAutoDownBase
 
 import scala.concurrent.Await
 import scala.concurrent.duration._

@@ -12,6 +12,7 @@ import akka.actor._
 import akka.cluster.ClusterEvent._
 import akka.cluster.MemberStatus._
 import akka.cluster.{ Member, TestMember }
+import org.sisioh.akka.cluster.custom.downing.strategy.quorumLeader.QuorumLeaderAutoDownBase
 
 import scala.collection.immutable
 import scala.collection.immutable.SortedSet

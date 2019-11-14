@@ -6,7 +6,7 @@
   * The original source code can be found here.
   * https://github.com/akka/akka/blob/master/akka-cluster/src/main/scala/akka/cluster/AutoDown.scala
   */
-package org.sisioh.akka.cluster.custom.downing
+package org.sisioh.akka.cluster.custom.downing.strategy
 
 import akka.actor.{ Actor, Address, Cancellable, Scheduler }
 import akka.cluster.ClusterEvent._
@@ -21,7 +21,7 @@ object CustomDowning {
 }
 
 abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) extends Actor {
-
+  autoDownUnreachableAfter.isFinite
   import CustomDowning._
 
   protected def selfAddress: Address

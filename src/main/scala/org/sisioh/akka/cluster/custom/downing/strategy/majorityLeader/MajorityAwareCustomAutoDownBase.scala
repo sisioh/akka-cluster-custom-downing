@@ -6,11 +6,13 @@
   * The original source code can be found here.
   * https://github.com/akka/akka/blob/master/akka-cluster/src/main/scala/akka/cluster/AutoDown.scala
   */
-package org.sisioh.akka.cluster.custom.downing
+package org.sisioh.akka.cluster.custom.downing.strategy.majorityLeader
 
 import akka.cluster.ClusterEvent._
 import akka.cluster.{ Member, MemberStatus }
 import akka.event.Logging
+import org.sisioh.akka.cluster.custom.downing.SplitBrainResolver
+import org.sisioh.akka.cluster.custom.downing.strategy.CustomAutoDownBase
 
 import scala.collection.immutable
 import scala.collection.immutable.SortedSet

@@ -12,6 +12,7 @@ import akka.actor._
 import akka.cluster.ClusterEvent.{ LeaderChanged, MemberRemoved, ReachableMember, UnreachableMember }
 import akka.cluster.MemberStatus.{ Down, Exiting, Removed, Up }
 import akka.cluster.TestMember
+import org.sisioh.akka.cluster.custom.downing.strategy.leaderRoles.LeaderAutoDownRolesBase
 
 import scala.concurrent.duration.{ FiniteDuration, _ }
 
