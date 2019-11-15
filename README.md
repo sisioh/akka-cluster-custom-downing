@@ -7,6 +7,7 @@
 akka-cluster-custom-downing provides a configurable auto-downing strategy that you can choose based on your distributed application design.
 It lets you configure which nodes can be downed automatically and who is responsible to execute a downing action.
 
+
 ## Introduction
 
 Akka cluster has an `akka.cluster.auto-down-unreachable-after` configuration property.
