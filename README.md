@@ -4,6 +4,9 @@
 [![Scaladoc](http://javadoc-badge.appspot.com/org.sisioh/akka-cluster-custom-downing.svg?label=scaladoc)](http://javadoc-badge.appspot.com/org.sisioh/akka-cluster-custom-downing_2.11)
 [![Reference Status](https://www.versioneye.com/java/org.sisioh:akka-cluster-custom-downing_2.11/reference_badge.svg?style=flat)](https://www.versioneye.com/java/org.sisioh:akka-cluster-custom-downing_2.11/references)
 
+akka-cluster-custom-downing provides a configurable auto-downing strategy that you can choose based on your distributed application design.
+It lets you configure which nodes can be downed automatically and who is responsible to execute a downing action.
+
 ## Introduction
 
 Akka cluster has an `akka.cluster.auto-down-unreachable-after` configuration property.
@@ -12,9 +15,6 @@ As [the Akka documentation](http://doc.akka.io/docs/akka/current/scala/cluster-u
 using the auto-down feature is dangerous because it may cause a split-brain scenario which leads to multiple clusters.
 The fundamental problem is that an actual down node and a temporary network partition cannot be distinguished from each other.
 You must realize that an auto-downed node may be actually alive and establishing its own cluster.  One of the worst consequences is that resources that must not be shared are now accessible by multiple Cluster Singletons or duplicatively sharded by Cluster Sharding.
-
-akka-cluster-custom-downing provides a configurable auto-downing strategy that you can choose based on your distributed application design.
-It lets you configure which nodes can be downed automatically and who is responsible to execute a downing action.
 
 ## Theoretical background
 
