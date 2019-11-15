@@ -81,7 +81,7 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
 
   protected def isLeaderOf(quorumRole: Option[String]): Boolean = quorumRole.fold(isLeader)(isRoleLeaderOf)
 
-  private def noContainsPendingUnreachableMembers(m: Member) = !pendingUnreachableMembers.contains(m)
+  private def noContainsPendingUnreachableMembers(m: Member): Boolean = !pendingUnreachableMembers.contains(m)
 
   protected def isQuorumMet(role: Option[String]): Boolean = {
     membersByAge.isQuorumMet(noContainsPendingUnreachableMembers, quorumSize, role)

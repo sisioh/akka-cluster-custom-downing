@@ -18,7 +18,7 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
 
   private val log = Logging(context.system, this)
 
-  private var membersByAge = SortedMembersByOldest.empty
+  private var membersByAge: SortedMembersByOldest = SortedMembersByOldest.empty
 
   override protected def receiveEvent: Receive = {
     case MemberUp(m) =>
