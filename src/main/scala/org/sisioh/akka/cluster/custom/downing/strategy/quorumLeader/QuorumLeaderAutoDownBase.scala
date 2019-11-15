@@ -33,10 +33,8 @@ abstract class QuorumLeaderAutoDownBase(
       if (isLeaderOf(quorumRole)) {
         downPendingUnreachableMembers()
       }
-    } else {
+    } else
       down(selfAddress)
-    }
-    super.onMemberRemoved(member, previousStatus)
   }
 
   override protected def downOrAddPending(member: Member): Unit = {

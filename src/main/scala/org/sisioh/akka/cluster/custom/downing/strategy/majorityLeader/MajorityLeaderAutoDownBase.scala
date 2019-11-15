@@ -32,10 +32,8 @@ abstract class MajorityLeaderAutoDownBase(
       if (isLeaderOf(majorityMemberRole)) {
         downPendingUnreachableMembers()
       }
-    } else {
+    } else
       down(selfAddress)
-    }
-    super.onMemberRemoved(member, previousStatus)
   }
 
   override protected def downOrAddPending(member: Member): Unit =

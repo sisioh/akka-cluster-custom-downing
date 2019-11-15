@@ -29,9 +29,8 @@ abstract class OldestAutoDownBase(
   override protected def downOrAddPending(member: Member): Unit = {
     if (isOldestOf(oldestMemberRole)) {
       down(member.address)
-    } else {
+    } else
       addPendingUnreachableMember(member)
-    }
   }
 
   private def downOnSecondary(member: Member): Unit = {
@@ -51,7 +50,7 @@ abstract class OldestAutoDownBase(
       else
         members.foreach(downOrAddPending)
     } else {
-      if (oldest.fold(true)(o => members.contains(o)))
+      if (oldest.fold(true)(members.contains))
         shutdownSelf()
       else
         members.foreach(downOrAddPending)
@@ -67,8 +66,7 @@ abstract class OldestAutoDownBase(
         down(m.address)
         replaceMember(m.copy(Down))
       }
-    } else {
+    } else
       addPendingUnreachableMember(member)
-    }
   }
 }
