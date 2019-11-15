@@ -14,8 +14,6 @@ import akka.event.Logging
 import org.sisioh.akka.cluster.custom.downing.SplitBrainResolver
 import org.sisioh.akka.cluster.custom.downing.strategy.{ CustomAutoDownBase, Members }
 
-import scala.collection.immutable
-import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.FiniteDuration
 
 abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration)
@@ -24,9 +22,9 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
 
   private val log = Logging(context.system, this)
 
-  private var leader: Boolean                               = false
-  private var roleLeader: Map[String, Boolean]              = Map.empty
-  private var membersByAddress: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ordering)
+  private var leader: Boolean                           = false
+  private var roleLeader: Map[String, Boolean]          = Map.empty
+  private var membersByAddress: SortedMembersByMajority = SortedMembersByMajority.empty
 
   override protected def receiveEvent: Receive = {
     case LeaderChanged(leaderOption) =>
@@ -70,17 +68,14 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
   protected def isRoleLeaderOf(role: String): Boolean = roleLeader.getOrElse(role, false)
 
   override protected def initialize(state: CurrentClusterState): Unit = {
+    super.initialize(state)
     leader = state.leader.contains(selfAddress)
     roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
-    membersByAddress = immutable.SortedSet.empty(Member.ordering) union state.members.filterNot { m =>
-        m.status == MemberStatus.Removed
-      }
-    super.initialize(state)
+    membersByAddress = SortedMembersByMajority(state.members)
   }
 
   protected def replaceMember(member: Member): Unit = {
-    membersByAddress -= member
-    membersByAddress += member
+    membersByAddress = membersByAddress.replace(member)
   }
 
   protected def removeMember(member: Member): Unit = {
@@ -89,33 +84,16 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
 
   protected def isLeaderOf(majorityRole: Option[String]): Boolean = majorityRole.fold(isLeader)(isRoleLeaderOf)
 
-  protected def majorityMemberOf(role: Option[String]): SortedSet[Member] = {
-    val ms = membersByAddress
-    role.fold(ms)(r => ms.filter(_.hasRole(r)))
+  protected def majorityMemberOf(role: Option[String]): SortedMembersByMajority = {
+    membersByAddress.majorityMemberOf(role)
   }
 
   protected def isMajority(role: Option[String]): Boolean = {
-    val ms        = majorityMemberOf(role)
-    val okMembers = ms filter isOK
-    val koMembers = ms -- okMembers
-
-    val isEqual = okMembers.size == koMembers.size
-    okMembers.size > koMembers.size || isEqual && ms.headOption.map(okMembers.contains(_)).getOrElse(true)
+    membersByAddress.isMajority(role, isOK)
   }
 
   protected def isMajorityAfterDown(members: Members, role: Option[String]): Boolean = {
-    val minus =
-      if (role.isEmpty) members
-      else {
-        val r = role.get
-        members.filter(_.hasRole(r))
-      }
-    val ms        = majorityMemberOf(role)
-    val okMembers = (ms filter isOK) -- minus.toSet
-    val koMembers = ms -- okMembers
-
-    val isEqual = okMembers.size == koMembers.size
-    okMembers.size > koMembers.size || isEqual && ms.headOption.map(okMembers.contains(_)).getOrElse(true)
+    membersByAddress.isMajorityAfterDown(members, role, isOK)
   }
 
   private def isOK(member: Member) = {

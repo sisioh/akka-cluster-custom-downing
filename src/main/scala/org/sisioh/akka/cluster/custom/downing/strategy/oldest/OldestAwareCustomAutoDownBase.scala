@@ -10,8 +10,6 @@ import akka.event.Logging
 import org.sisioh.akka.cluster.custom.downing.SplitBrainResolver
 import org.sisioh.akka.cluster.custom.downing.strategy.CustomAutoDownBase
 
-import scala.collection.immutable
-import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.FiniteDuration
 
 abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration)
@@ -20,8 +18,7 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
 
   private val log = Logging(context.system, this)
 
-  private var membersByAge: immutable.SortedSet[Member] =
-    immutable.SortedSet.empty(Member.ageOrdering)
+  private var membersByAge = SortedMembersByOldest.empty
 
   override protected def receiveEvent: Receive = {
     case MemberUp(m) =>
@@ -53,15 +50,12 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
   }
 
   override protected def initialize(state: CurrentClusterState): Unit = {
-    membersByAge = immutable.SortedSet.empty(Member.ageOrdering) union state.members.filterNot { m =>
-        m.status == MemberStatus.Removed
-      }
     super.initialize(state)
+    membersByAge = SortedMembersByOldest(state.members)
   }
 
   protected def replaceMember(member: Member): Unit = {
-    membersByAge -= member
-    membersByAge += member
+    membersByAge = membersByAge.replace(member)
   }
 
   protected def removeMember(member: Member): Unit = {
@@ -69,66 +63,43 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
   }
 
   protected def isAllIntermediateMemberRemoved(member: Member): Boolean = {
-    val isUnsafe = membersByAge.filterNot(_ == member).exists { m =>
-      m.status == MemberStatus.Down || m.status == MemberStatus.Exiting
-    }
-    !isUnsafe
+    membersByAge.isAllIntermediateMemberRemoved(member)
   }
 
   protected def isAllIntermediateMemberRemoved: Boolean = {
-    val isUnsafe = membersByAge.exists { m =>
-      m.status == MemberStatus.Down || m.status == MemberStatus.Exiting
-    }
-    !isUnsafe
+    membersByAge.isAllIntermediateMemberRemoved
   }
 
   protected def isOldestUnsafe(role: Option[String]): Boolean = {
-    targetMembers(role).headOption.map(_.address).contains(selfAddress)
+    membersByAge.isOldestUnsafe(selfAddress, role)
   }
 
   protected def isOldest: Boolean = {
-    isAllIntermediateMemberRemoved && isOldestUnsafe(None)
+    membersByAge.isOldest(selfAddress)
   }
 
   protected def isOldestWithout(member: Member): Boolean = {
-    isAllIntermediateMemberRemoved(member) && isOldestUnsafe(None)
+    membersByAge.isOldestWithout(selfAddress, member)
   }
 
   protected def isOldestOf(role: Option[String]): Boolean = {
-    isAllIntermediateMemberRemoved && isOldestUnsafe(role)
+    membersByAge.isOldestOf(selfAddress, role)
   }
 
   protected def isOldestOf(role: Option[String], without: Member): Boolean = {
-    isAllIntermediateMemberRemoved(without) && isOldestUnsafe(role)
+    membersByAge.isOldestOf(selfAddress, role)
   }
 
   protected def isOldestAlone(role: Option[String]): Boolean = {
-    val tm = targetMembers(role)
-    if (tm.isEmpty || tm.size == 1) true
-    else {
-      val oldest = tm.head
-      val rest   = tm.tail
-      if (isOldestUnsafe(role)) {
-        isOK(oldest) && rest.forall(isKO)
-      } else {
-        isKO(oldest) && rest.forall(isOK)
-      }
-    }
+    membersByAge.isOldestAlone(selfAddress, role, isOK, isKO)
   }
 
   protected def isSecondaryOldest(role: Option[String]): Boolean = {
-    val tm = targetMembers(role)
-    if (tm.size >= 2) {
-      tm.slice(1, 2).head.address == selfAddress
-    } else false
+    membersByAge.isSecondaryOldest(selfAddress, role)
   }
 
   protected def oldestMember(role: Option[String]): Option[Member] =
-    targetMembers(role).headOption
-
-  private def targetMembers(role: Option[String]): SortedSet[Member] = {
-    role.fold(membersByAge)(r => membersByAge.filter(_.hasRole(r)))
-  }
+    membersByAge.oldestMember(role)
 
   private def isOK(member: Member) = {
     (member.status == MemberStatus.Up || member.status == MemberStatus.Leaving) &&
