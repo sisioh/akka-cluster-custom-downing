@@ -53,6 +53,10 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
     case MemberExited(m) =>
       log.info("{} exited from the cluster", m)
       replaceMember(m)
+    case MemberDowned(m) =>
+      log.info("{} was downed", m)
+      replaceMember(m)
+      onMemberDowned(m)
     case MemberRemoved(m, prev) =>
       log.info("{} was removed from the cluster", m)
       removeUnreachableMember(m)
