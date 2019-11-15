@@ -10,8 +10,6 @@ import akka.event.Logging
 import org.sisioh.akka.cluster.custom.downing.SplitBrainResolver
 import org.sisioh.akka.cluster.custom.downing.strategy.{ CustomAutoDownBase, Members }
 
-import scala.collection.immutable
-import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.FiniteDuration
 
 abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachableAfter: FiniteDuration)
@@ -23,7 +21,7 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
   private var leader: Boolean                  = false
   private var roleLeader: Map[String, Boolean] = Map.empty
 
-  private var membersByAge: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ageOrdering)
+  private var membersByAge: SortedMembersByQuorum = SortedMembersByQuorum.empty
 
   override protected def receiveEvent: Receive = {
     case LeaderChanged(leaderOption) =>
@@ -69,15 +67,12 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
   override protected def initialize(state: CurrentClusterState): Unit = {
     leader = state.leader.contains(selfAddress)
     roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
-    membersByAge = immutable.SortedSet.empty(Member.ageOrdering) union state.members.filterNot { m =>
-        m.status == MemberStatus.Removed
-      }
+    membersByAge = SortedMembersByQuorum(state.members)
     super.initialize(state)
   }
 
   protected def replaceMember(member: Member): Unit = {
-    membersByAge -= member
-    membersByAge += member
+    membersByAge = membersByAge.replace(member)
   }
 
   protected def removeMember(member: Member): Unit = {
@@ -86,30 +81,14 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
 
   protected def isLeaderOf(quorumRole: Option[String]): Boolean = quorumRole.fold(isLeader)(isRoleLeaderOf)
 
-  protected def targetMember: SortedSet[Member] = membersByAge.filter { m =>
-    (m.status == MemberStatus.Up || m.status == MemberStatus.Leaving) &&
-    !pendingUnreachableMembers.contains(m)
-  }
-
-  protected def quorumMemberOf(role: Option[String]): SortedSet[Member] = {
-    val ms = targetMember
-    role.fold(ms)(r => ms.filter(_.hasRole(r)))
-  }
+  private def noContainsPendingUnreachableMembers(m: Member) = !pendingUnreachableMembers.contains(m)
 
   protected def isQuorumMet(role: Option[String]): Boolean = {
-    val ms = quorumMemberOf(role)
-    ms.size >= quorumSize
+    membersByAge.isQuorumMet(noContainsPendingUnreachableMembers, quorumSize, role)
   }
 
   protected def isQuorumMetAfterDown(members: Members, role: Option[String]): Boolean = {
-    val minus =
-      if (role.isEmpty) members.size
-      else {
-        val r = role.get
-        members.count(_.hasRole(r))
-      }
-    val ms = quorumMemberOf(role)
-    ms.size - minus >= quorumSize
+    membersByAge.isQuorumMetAfterDown(noContainsPendingUnreachableMembers, quorumSize, members, role)
   }
 
   protected def isUnreachableStable: Boolean = scheduledUnreachableMembers.isEmpty
