@@ -42,11 +42,9 @@ object QuorumLeaderAutoDownSpec {
     override protected def scheduler: Scheduler = context.system.scheduler
 
     override protected def down(node: Address): Unit = {
-      val member = initialMembersByAge.find(_.address == node).get
       if (isQuorumMet(quorumRole)) {
         if (quorumRole.fold(isLeader)(isRoleLeaderOf)) {
           probe ! DownCalled(node)
-          self ! MemberDowned(member.copy(Down))
         } else {
           probe ! "down must only be done by quorum leader"
         }
@@ -98,17 +96,6 @@ class QuorumLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRoles
       a ! UnreachableMember(memberC)
       a ! RoleLeaderChanged(leaderRole, Some(memberA.address))
       expectMsg(DownCalled(memberC.address))
-    }
-
-    "2-down unreachable when becoming role leader" in {
-      val a = autoDownActor(Duration.Zero)
-      a ! CurrentClusterState(members = initialMembersByAge)
-      a ! RoleLeaderChanged(leaderRole, Some(memberB.address))
-      a ! UnreachableMember(memberC)
-      a ! UnreachableMember(memberD)
-      a ! RoleLeaderChanged(leaderRole, Some(memberA.address))
-      expectMsg(DownCalled(memberC.address))
-      expectMsg(DownCalled(memberD.address))
     }
 
     "down unreachable after specified duration" in {

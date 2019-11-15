@@ -18,24 +18,13 @@ abstract class MajorityLeaderAutoDownBase(
 ) extends MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter) {
 
   override protected def onLeaderChanged(leader: Option[Address]): Unit = {
-    if (majorityMemberRole.isEmpty && isLeader)
-      downPendingUnreachableMembers()
+    if (majorityMemberRole.isEmpty && isLeader) downPendingUnreachableMembers()
   }
 
   override protected def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {
     majorityMemberRole.foreach { r =>
-      if (r == role && isRoleLeaderOf(r))
-        downPendingUnreachableMembers()
+      if (r == role && isRoleLeaderOf(r)) downPendingUnreachableMembers()
     }
-  }
-
-  override protected def onMemberDowned(member: Member): Unit = {
-    if (isMajority(majorityMemberRole)) {
-      if (isLeaderOf(majorityMemberRole)) {
-        downPendingUnreachableMembers()
-      }
-    } else
-      down(selfAddress)
   }
 
   override protected def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
