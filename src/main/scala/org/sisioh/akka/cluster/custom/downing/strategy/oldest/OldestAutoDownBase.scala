@@ -30,7 +30,7 @@ abstract class OldestAutoDownBase(
     if (isOldestOf(oldestMemberRole)) {
       down(member.address)
     } else {
-      pendingAsUnreachable(member)
+      addPendingUnreachableMember(member)
     }
   }
 
@@ -68,7 +68,7 @@ abstract class OldestAutoDownBase(
         replaceMember(m.copy(Down))
       }
     } else {
-      pendingAsUnreachable(member)
+      addPendingUnreachableMember(member)
     }
   }
 }

@@ -21,7 +21,7 @@ abstract class LeaderAutoDownRolesBase(targetRoles: Set[String], autoDownUnreach
       if (isLeader)
         down(member.address)
       else
-        pendingAsUnreachable(member)
+        addPendingUnreachableMember(member)
     }
 
   override protected def downOrAddPendingAll(members: Members): Unit =

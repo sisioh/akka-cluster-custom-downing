@@ -42,11 +42,11 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
     case UnreachableMember(m) =>
       log.info("{} is unreachable", m)
       replaceMember(m)
-      unreachableMember(m)
+      addUnreachableMember(m)
     case ReachableMember(m) =>
       log.info("{} is reachable", m)
       replaceMember(m)
-      remove(m)
+      removeUnreachableMember(m)
     case MemberLeft(m) =>
       log.info("{} left the cluster", m)
       replaceMember(m)
@@ -55,7 +55,7 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
       replaceMember(m)
     case MemberRemoved(m, prev) =>
       log.info("{} was removed from the cluster", m)
-      remove(m)
+      removeUnreachableMember(m)
       removeMember(m)
       onMemberRemoved(m, prev)
   }
@@ -65,10 +65,10 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
   protected def isRoleLeaderOf(role: String): Boolean = roleLeader.getOrElse(role, false)
 
   override protected def initialize(state: CurrentClusterState): Unit = {
+    super.initialize(state)
     leader = state.leader.contains(selfAddress)
     roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
     membersByAge = SortedMembersByQuorum(state.members)
-    super.initialize(state)
   }
 
   protected def replaceMember(member: Member): Unit = {

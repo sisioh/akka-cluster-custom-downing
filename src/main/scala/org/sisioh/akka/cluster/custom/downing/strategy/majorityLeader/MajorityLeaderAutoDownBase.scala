@@ -43,7 +43,7 @@ abstract class MajorityLeaderAutoDownBase(
       down(member.address)
       replaceMember(member.copy(Down))
     } else
-      pendingAsUnreachable(member)
+      addPendingUnreachableMember(member)
 
   override protected def downOrAddPendingAll(members: Members): Unit = {
     if (isMajorityAfterDown(members, majorityMemberRole)) {

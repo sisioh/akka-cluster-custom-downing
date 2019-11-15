@@ -12,14 +12,14 @@ class SortedMembersByOldest(values: immutable.SortedSet[Member]) extends SortedM
   override protected def createInstance(values: immutable.SortedSet[Member]): SortedMembersByOldest =
     new SortedMembersByOldest(values)
 
-  def isAllIntermediateMemberRemoved(member: Member): Boolean = {
+  private def isAllIntermediateMemberRemoved(member: Member): Boolean = {
     val isUnsafe = filterNot(_ == member).exists { m =>
       m.status == MemberStatus.Down || m.status == MemberStatus.Exiting
     }
     !isUnsafe
   }
 
-  def isAllIntermediateMemberRemoved: Boolean = {
+  private def isAllIntermediateMemberRemoved: Boolean = {
     val isUnsafe = exists { m =>
       m.status == MemberStatus.Down || m.status == MemberStatus.Exiting
     }
@@ -30,7 +30,7 @@ class SortedMembersByOldest(values: immutable.SortedSet[Member]) extends SortedM
     role.fold(values)(r => values.filter(_.hasRole(r)))
   }
 
-  def isOldestUnsafe(selfAddress: Address, role: Option[String]): Boolean = {
+  private def isOldestUnsafe(selfAddress: Address, role: Option[String]): Boolean = {
     targetMembers(role).headOption.map(_.address).contains(selfAddress)
   }
 

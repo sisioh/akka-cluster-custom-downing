@@ -28,19 +28,19 @@ abstract class RoleLeaderAwareCustomAutoDownBase(autoDownUnreachableAfter: Finit
       onRoleLeaderChanged(role, leaderOption)
     case UnreachableMember(m) =>
       log.info("{} is unreachable", m)
-      unreachableMember(m)
+      addUnreachableMember(m)
     case ReachableMember(m) =>
       log.info("{} is reachable", m)
-      remove(m)
+      removeUnreachableMember(m)
     case MemberRemoved(m, s) =>
       log.info("{} was removed from the cluster", m)
-      remove(m)
+      removeUnreachableMember(m)
       onMemberRemoved(m, s)
   }
 
   override protected def initialize(state: CurrentClusterState): Unit = {
-    roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
     super.initialize(state)
+    roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
   }
 
 }

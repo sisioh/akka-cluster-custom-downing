@@ -44,7 +44,7 @@ abstract class QuorumLeaderAutoDownBase(
       down(member.address)
       replaceMember(member.copy(Down))
     } else {
-      pendingAsUnreachable(member)
+      addPendingUnreachableMember(member)
     }
   }
 

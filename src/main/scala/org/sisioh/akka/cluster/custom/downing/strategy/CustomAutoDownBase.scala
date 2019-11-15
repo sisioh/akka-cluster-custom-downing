@@ -36,12 +36,16 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
 
   import context.dispatcher
 
-  private var scheduledUnreachable: MemberCancellables = MemberCancellables.empty
-  private var pendingUnreachable: Members              = Members.empty
-  private var unstableUnreachable: Members             = Members.empty
+  private var _scheduledUnreachable: MemberCancellables = MemberCancellables.empty
+  private var _pendingUnreachableMembers: Members       = Members.empty
+  private var _unstableUnreachableMembers: Members      = Members.empty
+
+  protected def scheduledUnreachableMembers: MemberCancellables = _scheduledUnreachable
+  protected def pendingUnreachableMembers: Members              = _pendingUnreachableMembers
+  protected def unstableUnreachableMembers: Members             = _unstableUnreachableMembers
 
   override def postStop(): Unit = {
-    scheduledUnreachable.cancelAll()
+    _scheduledUnreachable.cancelAll()
     super.postStop()
   }
 
@@ -52,20 +56,18 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
   private def predefinedReceiveEvent: Receive = {
     case state: CurrentClusterState =>
       initialize(state)
-      state.unreachable foreach unreachableMember
-
+      state.unreachable foreach addUnreachableMember
     case UnreachableTimeout(member) =>
-      if (scheduledUnreachable contains member) {
-        scheduledUnreachable -= member
-        if (scheduledUnreachable.isEmpty) {
-          unstableUnreachable += member
-          downOrAddPendingAll(unstableUnreachable)
-          unstableUnreachable = Members.empty
+      if (_scheduledUnreachable contains member) {
+        _scheduledUnreachable -= member
+        if (_scheduledUnreachable.isEmpty) {
+          _unstableUnreachableMembers += member
+          downOrAddPendingAll(_unstableUnreachableMembers)
+          _unstableUnreachableMembers = Members.empty
         } else {
-          unstableUnreachable += member
+          _unstableUnreachableMembers += member
         }
       }
-
     case _: ClusterDomainEvent =>
   }
 
@@ -79,39 +81,30 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
 
   protected def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {}
 
-  protected def unreachableMember(m: Member): Unit =
-    if (!skipMemberStatus(m.status) && !scheduledUnreachable.contains(m))
-      scheduleUnreachable(m)
-
-  private def scheduleUnreachable(m: Member): Unit =
-    if (autoDownUnreachableAfter == Duration.Zero)
-      downOrAddPending(m)
-    else {
-      val task = scheduler.scheduleOnce(autoDownUnreachableAfter, self, UnreachableTimeout(m))
-      scheduledUnreachable += (m -> task)
+  protected def addUnreachableMember(member: Member): Unit =
+    if (!skipMemberStatus(member.status) && !_scheduledUnreachable.contains(member)) {
+      if (autoDownUnreachableAfter == Duration.Zero)
+        downOrAddPending(member)
+      else {
+        val task = scheduler.scheduleOnce(autoDownUnreachableAfter, self, UnreachableTimeout(member))
+        _scheduledUnreachable += (member -> task)
+      }
     }
 
-  protected def remove(member: Member): Unit = {
-    scheduledUnreachable.cancel(member)
-    scheduledUnreachable -= member
-    pendingUnreachable -= member
-    unstableUnreachable -= member
+  protected def removeUnreachableMember(member: Member): Unit = {
+    _scheduledUnreachable.cancel(member)
+    _scheduledUnreachable -= member
+    _pendingUnreachableMembers -= member
+    _unstableUnreachableMembers -= member
   }
 
-  protected def scheduledUnreachableMembers: MemberCancellables =
-    scheduledUnreachable
-
-  protected def pendingUnreachableMembers: Members = pendingUnreachable
-
-  protected def pendingAsUnreachable(member: Member): Unit = pendingUnreachable += member
+  protected def addPendingUnreachableMember(member: Member): Unit = _pendingUnreachableMembers += member
 
   protected def downPendingUnreachableMembers(): Unit = {
-    val (head, tail) = pendingUnreachable.splitHeadAndTail
+    val (head, tail) = _pendingUnreachableMembers.splitHeadAndTail
     head.foreach { member =>
       down(member.address)
     }
-    pendingUnreachable = tail
+    _pendingUnreachableMembers = tail
   }
-
-  protected def unstableUnreachableMembers: Members = unstableUnreachable
 }

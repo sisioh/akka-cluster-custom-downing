@@ -28,21 +28,21 @@ abstract class LeaderAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
       onLeaderChanged(leaderOption)
     case UnreachableMember(m) =>
       log.info("{} is unreachable", m)
-      unreachableMember(m)
+      addUnreachableMember(m)
     case ReachableMember(m) =>
       log.info("{} is reachable", m)
-      remove(m)
+      removeUnreachableMember(m)
     case MemberDowned(m) =>
       log.info("{} was downed", m)
       onMemberDowned(m)
     case MemberRemoved(m, s) =>
       log.info("{} was removed from the cluster", m)
-      remove(m)
+      removeUnreachableMember(m)
       onMemberRemoved(m, s)
   }
 
   override protected def initialize(state: CurrentClusterState): Unit = {
-    leader = state.leader.contains(selfAddress)
     super.initialize(state)
+    leader = state.leader.contains(selfAddress)
   }
 }
