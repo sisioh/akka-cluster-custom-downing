@@ -25,7 +25,7 @@ abstract class RoleLeaderAutoDownRolesBase(
       if (isRoleLeaderOf(leaderRole))
         down(member.address)
       else
-        pendingAsUnreachable(member)
+        addPendingUnreachableMember(member)
     }
   }
 

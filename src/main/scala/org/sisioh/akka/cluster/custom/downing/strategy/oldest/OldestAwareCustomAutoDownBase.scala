@@ -18,7 +18,7 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
 
   private val log = Logging(context.system, this)
 
-  private var membersByAge = SortedMembersByOldest.empty
+  private var membersByAge: SortedMembersByOldest = SortedMembersByOldest.empty
 
   override protected def receiveEvent: Receive = {
     case MemberUp(m) =>
@@ -27,11 +27,11 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
     case UnreachableMember(m) =>
       log.info("{} is unreachable", m)
       replaceMember(m)
-      unreachableMember(m)
+      addUnreachableMember(m)
     case ReachableMember(m) =>
       log.info("{} is reachable", m)
       replaceMember(m)
-      remove(m)
+      removeUnreachableMember(m)
     case MemberLeft(m) =>
       log.info("{} is left the cluster", m)
       replaceMember(m)
@@ -44,7 +44,7 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
       onMemberDowned(m)
     case MemberRemoved(m, prev) =>
       log.info("{} was removed from the cluster", m)
-      remove(m)
+      removeUnreachableMember(m)
       removeMember(m)
       onMemberRemoved(m, prev)
   }
@@ -60,18 +60,6 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
 
   protected def removeMember(member: Member): Unit = {
     membersByAge -= member
-  }
-
-  protected def isAllIntermediateMemberRemoved(member: Member): Boolean = {
-    membersByAge.isAllIntermediateMemberRemoved(member)
-  }
-
-  protected def isAllIntermediateMemberRemoved: Boolean = {
-    membersByAge.isAllIntermediateMemberRemoved
-  }
-
-  protected def isOldestUnsafe(role: Option[String]): Boolean = {
-    membersByAge.isOldestUnsafe(selfAddress, role)
   }
 
   protected def isOldest: Boolean = {
@@ -102,9 +90,10 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
     membersByAge.oldestMember(role)
 
   private def isOK(member: Member) = {
-    (member.status == MemberStatus.Up || member.status == MemberStatus.Leaving) &&
-    (!pendingUnreachableMembers.contains(member) && !unstableUnreachableMembers
-      .contains(member))
+    (member.status == MemberStatus.Up ||
+    member.status == MemberStatus.Leaving) &&
+    (!pendingUnreachableMembers.contains(member) &&
+    !unstableUnreachableMembers.contains(member))
   }
 
   private def isKO(member: Member): Boolean = !isOK(member)

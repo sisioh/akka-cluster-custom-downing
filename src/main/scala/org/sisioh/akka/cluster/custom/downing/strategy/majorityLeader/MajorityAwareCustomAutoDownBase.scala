@@ -45,11 +45,11 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
     case UnreachableMember(m) =>
       log.info("{} is unreachable", m)
       replaceMember(m)
-      unreachableMember(m)
+      addUnreachableMember(m)
     case ReachableMember(m) =>
       log.info("{} is reachable", m)
       replaceMember(m)
-      remove(m)
+      removeUnreachableMember(m)
     case MemberLeft(m) =>
       log.info("{} left the cluster", m)
       replaceMember(m)
@@ -58,7 +58,7 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
       replaceMember(m)
     case MemberRemoved(m, prev) =>
       log.info("{} was removed from the cluster", m)
-      remove(m)
+      removeUnreachableMember(m)
       removeMember(m)
       onMemberRemoved(m, prev)
   }
@@ -97,8 +97,10 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
   }
 
   private def isOK(member: Member) = {
-    (member.status == MemberStatus.Up || member.status == MemberStatus.Leaving) &&
-    (!pendingUnreachableMembers.contains(member) && !unstableUnreachableMembers.contains(member))
+    (member.status == MemberStatus.Up ||
+    member.status == MemberStatus.Leaving) &&
+    (!pendingUnreachableMembers.contains(member) &&
+    !unstableUnreachableMembers.contains(member))
   }
 
   private def isKO(member: Member): Boolean = !isOK(member)
