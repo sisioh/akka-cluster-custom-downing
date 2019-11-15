@@ -19,13 +19,24 @@ abstract class QuorumLeaderAutoDownBase(
 ) extends QuorumAwareCustomAutoDownBase(quorumSize, autoDownUnreachableAfter) {
 
   override protected def onLeaderChanged(leader: Option[Address]): Unit = {
-    if (quorumRole.isEmpty && isLeader) downPendingUnreachableMembers()
+    if (quorumRole.isEmpty && isLeader)
+      downPendingUnreachableMembers()
   }
 
   override protected def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {
     quorumRole.foreach { r =>
-      if (r == role && isRoleLeaderOf(r)) downPendingUnreachableMembers()
+      if (r == role && isRoleLeaderOf(r))
+        downPendingUnreachableMembers()
     }
+  }
+
+  override protected def onMemberDowned(member: Member): Unit = {
+    if (isQuorumMet(quorumRole)) {
+      if (isLeaderOf(quorumRole)) {
+        downPendingUnreachableMembers()
+      }
+    } else
+      down(selfAddress)
   }
 
   override protected def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
@@ -41,9 +52,8 @@ abstract class QuorumLeaderAutoDownBase(
     if (isLeaderOf(quorumRole)) {
       down(member.address)
       replaceMember(member.copy(Down))
-    } else {
+    } else
       addPendingUnreachableMember(member)
-    }
   }
 
   override protected def downOrAddPendingAll(members: Members): Unit = {

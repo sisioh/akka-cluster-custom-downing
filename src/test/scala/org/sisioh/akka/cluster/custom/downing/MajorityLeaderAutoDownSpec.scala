@@ -12,6 +12,7 @@ import akka.actor._
 import akka.cluster.ClusterEvent._
 import akka.cluster.MemberStatus._
 import akka.cluster.{ Member, TestMember }
+import org.sisioh.akka.cluster.custom.downing.OldestAutoDownRolesSpec.initialMembersByAge
 import org.sisioh.akka.cluster.custom.downing.strategy.majorityLeader.MajorityLeaderAutoDownBase
 
 import scala.collection.immutable
@@ -46,9 +47,11 @@ object MajorityLeaderAutoDownSpec {
     override protected def scheduler: Scheduler = context.system.scheduler
 
     override protected def down(node: Address): Unit = {
+      val member = initialMembersByAge.find(_.address == node).get
       if (isMajority(majorityRole)) {
         if (majorityRole.fold(isLeader)(isRoleLeaderOf)) {
           probe ! DownCalled(node)
+          self ! MemberDowned(member.copy(Down))
         } else {
           probe ! "down must only be done by quorum leader"
         }
@@ -101,6 +104,17 @@ class MajorityLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRol
       a ! UnreachableMember(memberC)
       a ! RoleLeaderChanged(leaderRole, Some(memberA.address))
       expectMsg(DownCalled(memberC.address))
+    }
+
+    "2-down unreachable when becoming role leader" in {
+      val a = autoDownActor(Duration.Zero)
+      a ! CurrentClusterState(members = initialMembersByAddress)
+      a ! RoleLeaderChanged(leaderRole, Some(memberB.address))
+      a ! UnreachableMember(memberC)
+      a ! UnreachableMember(memberD)
+      a ! RoleLeaderChanged(leaderRole, Some(memberA.address))
+      expectMsg(DownCalled(memberC.address))
+      expectMsg(DownCalled(memberD.address))
     }
 
     "down unreachable after specified duration" in {
