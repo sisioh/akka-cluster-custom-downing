@@ -37,7 +37,8 @@ object RoleLeaderAutoDownRolesSpec {
       targetRoles: Set[String],
       autoDownUnreachableAfter: FiniteDuration,
       probe: ActorRef
-  ) extends RoleLeaderAutoDownRolesBase(leaderRole, targetRoles, autoDownUnreachableAfter) {
+  ) extends RoleLeaderAutoDownRolesBase(leaderRole, targetRoles, autoDownUnreachableAfter)
+      with ActorLogging {
 
     override protected def selfAddress: Address = roleLeaderA.address
     override protected def scheduler: Scheduler = context.system.scheduler

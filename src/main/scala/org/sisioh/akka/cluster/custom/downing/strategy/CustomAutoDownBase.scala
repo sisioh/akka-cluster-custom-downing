@@ -12,6 +12,7 @@ import akka.actor.{ Actor, Address, Cancellable, Scheduler }
 import akka.cluster.ClusterEvent._
 import akka.cluster.MemberStatus.{ Down, Exiting }
 import akka.cluster._
+import akka.event.{ Logging, LoggingAdapter }
 
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 
@@ -23,6 +24,8 @@ object CustomDowning {
 abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) extends Actor {
   autoDownUnreachableAfter.isFinite
   import CustomDowning._
+
+  def log: LoggingAdapter
 
   protected def selfAddress: Address
 
@@ -103,6 +106,7 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
   protected def downPendingUnreachableMembers(): Unit = {
     val (head, tail) = _pendingUnreachableMembers.splitHeadAndTail
     head.foreach { member =>
+      log.debug("downPendingUnreachableMembers: down({})", member.address)
       down(member.address)
     }
     _pendingUnreachableMembers = tail

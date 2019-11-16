@@ -37,7 +37,8 @@ object OldestAutoDownRolesSpec {
       downIfAlone: Boolean,
       autoDownUnreachableAfter: FiniteDuration,
       probe: ActorRef
-  ) extends OldestAutoDownBase(testRoleOpt, downIfAlone, autoDownUnreachableAfter) {
+  ) extends OldestAutoDownBase(testRoleOpt, downIfAlone, autoDownUnreachableAfter)
+      with ActorLogging {
 
     override protected def selfAddress: Address = address
     override protected def scheduler: Scheduler = context.system.scheduler

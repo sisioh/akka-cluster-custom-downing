@@ -40,15 +40,18 @@ object MajorityLeaderAutoDownSpec {
         majorityRole,
         downIfInMinority = true,
         autoDownUnreachableAfter = autoDownUnreachableAfter
-      ) {
+      )
+      with ActorLogging {
 
     override protected def selfAddress: Address = address
     override protected def scheduler: Scheduler = context.system.scheduler
 
     override protected def down(node: Address): Unit = {
+      val member = initialMembersByAddress.find(_.address == node).get
       if (isMajority(majorityRole)) {
         if (majorityRole.fold(isLeader)(isRoleLeaderOf)) {
           probe ! DownCalled(node)
+          self ! MemberDowned(member.copy(Down))
         } else {
           probe ! "down must only be done by quorum leader"
         }
@@ -101,6 +104,17 @@ class MajorityLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRol
       a ! UnreachableMember(memberC)
       a ! RoleLeaderChanged(leaderRole, Some(memberA.address))
       expectMsg(DownCalled(memberC.address))
+    }
+
+    "2-down unreachable when becoming role leader" in {
+      val a = autoDownActor(Duration.Zero)
+      a ! CurrentClusterState(members = initialMembersByAddress)
+      a ! RoleLeaderChanged(leaderRole, Some(memberB.address))
+      a ! UnreachableMember(memberC)
+      a ! UnreachableMember(memberD)
+      a ! RoleLeaderChanged(leaderRole, Some(memberA.address))
+      expectMsg(DownCalled(memberC.address))
+      expectMsg(DownCalled(memberD.address))
     }
 
     "down unreachable after specified duration" in {

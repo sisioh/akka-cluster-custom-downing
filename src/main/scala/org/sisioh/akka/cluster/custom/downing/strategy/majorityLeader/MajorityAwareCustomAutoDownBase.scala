@@ -10,7 +10,6 @@ package org.sisioh.akka.cluster.custom.downing.strategy.majorityLeader
 
 import akka.cluster.ClusterEvent._
 import akka.cluster.{ Member, MemberStatus }
-import akka.event.Logging
 import org.sisioh.akka.cluster.custom.downing.SplitBrainResolver
 import org.sisioh.akka.cluster.custom.downing.strategy.{ CustomAutoDownBase, Members }
 
@@ -19,8 +18,6 @@ import scala.concurrent.duration.FiniteDuration
 abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration)
     extends CustomAutoDownBase(autoDownUnreachableAfter)
     with SplitBrainResolver {
-
-  private val log = Logging(context.system, this)
 
   private var leader: Boolean                           = false
   private var roleLeader: Map[String, Boolean]          = Map.empty
@@ -56,6 +53,10 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
     case MemberExited(m) =>
       log.info("{} exited the cluster", m)
       replaceMember(m)
+    case MemberDowned(m) =>
+      log.info("{} was downed", m)
+      replaceMember(m)
+      onMemberDowned(m)
     case MemberRemoved(m, prev) =>
       log.info("{} was removed from the cluster", m)
       removeUnreachableMember(m)
@@ -68,7 +69,6 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
   protected def isRoleLeaderOf(role: String): Boolean = roleLeader.getOrElse(role, false)
 
   override protected def initialize(state: CurrentClusterState): Unit = {
-    super.initialize(state)
     leader = state.leader.contains(selfAddress)
     roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
     membersByAddress = SortedMembersByMajority(state.members)
