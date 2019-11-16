@@ -5,8 +5,7 @@
 package org.sisioh.akka.cluster.custom.downing.strategy.quorumLeader
 
 import akka.cluster.ClusterEvent._
-import akka.cluster.{ Member, MemberStatus }
-import akka.event.Logging
+import akka.cluster.Member
 import org.sisioh.akka.cluster.custom.downing.SplitBrainResolver
 import org.sisioh.akka.cluster.custom.downing.strategy.{ CustomAutoDownBase, Members }
 
@@ -15,8 +14,6 @@ import scala.concurrent.duration.FiniteDuration
 abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachableAfter: FiniteDuration)
     extends CustomAutoDownBase(autoDownUnreachableAfter)
     with SplitBrainResolver {
-
-  private val log = Logging(context.system, this)
 
   private var leader: Boolean                  = false
   private var roleLeader: Map[String, Boolean] = Map.empty
@@ -65,7 +62,7 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
   protected def isRoleLeaderOf(role: String): Boolean = roleLeader.getOrElse(role, false)
 
   override protected def initialize(state: CurrentClusterState): Unit = {
-    super.initialize(state)
+    log.debug("initialize: {}", state)
     leader = state.leader.contains(selfAddress)
     roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
     membersByAge = SortedMembersByQuorum(state.members)

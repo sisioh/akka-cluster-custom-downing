@@ -5,15 +5,12 @@
 package org.sisioh.akka.cluster.custom.downing.strategy.roleLeaderRoles
 
 import akka.cluster.ClusterEvent._
-import akka.event.Logging
 import org.sisioh.akka.cluster.custom.downing.strategy.CustomAutoDownBase
 
 import scala.concurrent.duration.FiniteDuration
 
 abstract class RoleLeaderAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration)
     extends CustomAutoDownBase(autoDownUnreachableAfter) {
-
-  private val log = Logging(context.system, this)
 
   private var roleLeader: Map[String, Boolean] = Map.empty
 
@@ -39,7 +36,7 @@ abstract class RoleLeaderAwareCustomAutoDownBase(autoDownUnreachableAfter: Finit
   }
 
   override protected def initialize(state: CurrentClusterState): Unit = {
-    super.initialize(state)
+    log.debug("initialize: {}", state)
     roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
   }
 

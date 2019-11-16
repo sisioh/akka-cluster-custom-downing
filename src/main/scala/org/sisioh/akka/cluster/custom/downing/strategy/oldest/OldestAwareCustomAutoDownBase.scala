@@ -6,7 +6,6 @@ package org.sisioh.akka.cluster.custom.downing.strategy.oldest
 
 import akka.cluster.ClusterEvent._
 import akka.cluster.{ Member, MemberStatus }
-import akka.event.Logging
 import org.sisioh.akka.cluster.custom.downing.SplitBrainResolver
 import org.sisioh.akka.cluster.custom.downing.strategy.CustomAutoDownBase
 
@@ -15,8 +14,6 @@ import scala.concurrent.duration.FiniteDuration
 abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration)
     extends CustomAutoDownBase(autoDownUnreachableAfter)
     with SplitBrainResolver {
-
-  private val log = Logging(context.system, this)
 
   private var membersByAge: SortedMembersByOldest = SortedMembersByOldest.empty
 
@@ -50,7 +47,7 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
   }
 
   override protected def initialize(state: CurrentClusterState): Unit = {
-    super.initialize(state)
+    log.debug("initialize: {}", state)
     membersByAge = SortedMembersByOldest(state.members)
   }
 

@@ -5,15 +5,12 @@
 package org.sisioh.akka.cluster.custom.downing.strategy.leaderRoles
 
 import akka.cluster.ClusterEvent._
-import akka.event.Logging
 import org.sisioh.akka.cluster.custom.downing.strategy.CustomAutoDownBase
 
 import scala.concurrent.duration.FiniteDuration
 
 abstract class LeaderAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration)
     extends CustomAutoDownBase(autoDownUnreachableAfter) {
-
-  private val log = Logging(context.system, this)
 
   private var leader: Boolean = false
 
@@ -42,7 +39,7 @@ abstract class LeaderAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
   }
 
   override protected def initialize(state: CurrentClusterState): Unit = {
-    super.initialize(state)
+    log.debug("initialize: {}", state)
     leader = state.leader.contains(selfAddress)
   }
 }
