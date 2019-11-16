@@ -37,7 +37,7 @@ abstract class MajorityLeaderAutoDownBase(
 
   override protected def onMemberDowned(member: Member): Unit = {
     log.debug(
-      "isMajority(majorityMemberRole) = {}, isLeaderOf(majorityMemberRole) = {}",
+      "onMemberDowned: isMajority(majorityMemberRole) = {}, isLeaderOf(majorityMemberRole) = {}",
       isMajority(majorityMemberRole),
       isLeaderOf(majorityMemberRole)
     )
@@ -54,7 +54,7 @@ abstract class MajorityLeaderAutoDownBase(
 
   override protected def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
     log.debug(
-      "isMajority(majorityMemberRole) = {}, isLeaderOf(majorityMemberRole) = {}",
+      "onMemberRemoved: isMajority(majorityMemberRole) = {}, isLeaderOf(majorityMemberRole) = {}",
       isMajority(majorityMemberRole),
       isLeaderOf(majorityMemberRole)
     )

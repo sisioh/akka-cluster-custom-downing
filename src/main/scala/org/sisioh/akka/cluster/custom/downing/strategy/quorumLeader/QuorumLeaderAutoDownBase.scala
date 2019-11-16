@@ -19,22 +19,55 @@ abstract class QuorumLeaderAutoDownBase(
 ) extends QuorumAwareCustomAutoDownBase(quorumSize, autoDownUnreachableAfter) {
 
   override protected def onLeaderChanged(leader: Option[Address]): Unit = {
-    if (quorumRole.isEmpty && isLeader) downPendingUnreachableMembers()
+    log.debug("onLeaderChanged: quorumRole = {}, isLeader = {}", quorumRole, isLeader)
+    if (quorumRole.isEmpty && isLeader) {
+      log.debug("onLeaderChanged: down PendingUnreachableMembers")
+      downPendingUnreachableMembers()
+    }
   }
 
   override protected def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {
     quorumRole.foreach { r =>
-      if (r == role && isRoleLeaderOf(r)) downPendingUnreachableMembers()
+      log.debug("onRoleLeaderChanged: r = {}, role = {}, isRoleLoaderOf(r) = {}", r, role, isRoleLeaderOf(r))
+      if (r == role && isRoleLeaderOf(r)) {
+        log.debug("onRoleLeaderChanged: down PendingUnreachableMembers")
+        downPendingUnreachableMembers()
+      }
+    }
+  }
+
+  override protected def onMemberDowned(member: Member): Unit = {
+    log.debug(
+      "onMemberDowned: isQuorumMet(quorumRole) = {}, isLeaderOf(quorumRole) = {}",
+      isQuorumMet(quorumRole),
+      isLeaderOf(quorumRole)
+    )
+    if (isQuorumMet(quorumRole)) {
+      if (isLeaderOf(quorumRole)) {
+        log.debug("onMemberDowned: down PendingUnreachableMembers")
+        downPendingUnreachableMembers()
+      }
+    } else {
+      log.debug("onMemberRemoved: down({})", selfAddress)
+      down(selfAddress)
     }
   }
 
   override protected def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
+    log.debug(
+      "onMemberDowned: isQuorumMet(quorumRole) = {}, isLeaderOf(quorumRole) = {}",
+      isQuorumMet(quorumRole),
+      isLeaderOf(quorumRole)
+    )
     if (isQuorumMet(quorumRole)) {
       if (isLeaderOf(quorumRole)) {
+        log.debug("onMemberRemoved: down PendingUnreachableMembers")
         downPendingUnreachableMembers()
       }
-    } else
+    } else {
+      log.debug("onMemberRemoved: down({})", selfAddress)
       down(selfAddress)
+    }
   }
 
   override protected def downOrAddPending(member: Member): Unit = {
