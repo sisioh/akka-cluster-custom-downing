@@ -69,7 +69,6 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
   protected def isRoleLeaderOf(role: String): Boolean = roleLeader.getOrElse(role, false)
 
   override protected def initialize(state: CurrentClusterState): Unit = {
-    log.debug("initialize: {}", state)
     leader = state.leader.contains(selfAddress)
     roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
     membersByAddress = SortedMembersByMajority(state.members)

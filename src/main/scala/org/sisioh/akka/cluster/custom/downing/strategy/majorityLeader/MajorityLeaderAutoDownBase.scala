@@ -18,37 +18,60 @@ abstract class MajorityLeaderAutoDownBase(
 ) extends MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter) {
 
   override protected def onLeaderChanged(leader: Option[Address]): Unit = {
-    if (majorityMemberRole.isEmpty && isLeader)
+    log.debug("onLeaderChanged: majorityMemberRole = {}, isLeader = {}", majorityMemberRole, isLeader)
+    if (majorityMemberRole.isEmpty && isLeader) {
+      log.debug("onLeaderChanged: down PendingUnreachableMembers")
       downPendingUnreachableMembers()
+    }
   }
 
   override protected def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {
     majorityMemberRole.foreach { r =>
-      if (r == role && isRoleLeaderOf(r))
+      log.debug("onRoleLeaderChanged: r = {}, role = {}, isRoleLoaderOf(r) = {}", r, role, isRoleLeaderOf(r))
+      if (r == role && isRoleLeaderOf(r)) {
+        log.debug("onRoleLeaderChanged: down PendingUnreachableMembers")
         downPendingUnreachableMembers()
+      }
     }
   }
 
   override protected def onMemberDowned(member: Member): Unit = {
+    log.debug(
+      "isMajority(majorityMemberRole) = {}, isLeaderOf(majorityMemberRole) = {}",
+      isMajority(majorityMemberRole),
+      isLeaderOf(majorityMemberRole)
+    )
     if (isMajority(majorityMemberRole)) {
       if (isLeaderOf(majorityMemberRole)) {
+        log.debug("onMemberDowned: down PendingUnreachableMembers")
         downPendingUnreachableMembers()
       }
-    } else
+    } else {
+      log.debug("onMemberDowned: down({}) ", selfAddress)
       down(selfAddress)
+    }
   }
 
   override protected def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
+    log.debug(
+      "isMajority(majorityMemberRole) = {}, isLeaderOf(majorityMemberRole) = {}",
+      isMajority(majorityMemberRole),
+      isLeaderOf(majorityMemberRole)
+    )
     if (isMajority(majorityMemberRole)) {
       if (isLeaderOf(majorityMemberRole)) {
+        log.debug("onMemberRemoved: down PendingUnreachableMembers")
         downPendingUnreachableMembers()
       }
-    } else
+    } else {
+      log.debug("onMemberDowned: down({}) ", selfAddress)
       down(selfAddress)
+    }
   }
 
   override protected def downOrAddPending(member: Member): Unit =
     if (isLeaderOf(majorityMemberRole)) {
+      log.debug("downOrAddPending: down({})", member.address)
       down(member.address)
       replaceMember(member.copy(Down))
     } else

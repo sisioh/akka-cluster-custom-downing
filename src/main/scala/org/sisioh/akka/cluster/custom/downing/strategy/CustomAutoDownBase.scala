@@ -106,6 +106,7 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
   protected def downPendingUnreachableMembers(): Unit = {
     val (head, tail) = _pendingUnreachableMembers.splitHeadAndTail
     head.foreach { member =>
+      log.debug("downPendingUnreachableMembers: down({})", member.address)
       down(member.address)
     }
     _pendingUnreachableMembers = tail

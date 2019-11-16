@@ -47,9 +47,11 @@ object MajorityLeaderAutoDownSpec {
     override protected def scheduler: Scheduler = context.system.scheduler
 
     override protected def down(node: Address): Unit = {
+      val member = initialMembersByAddress.find(_.address == node).get
       if (isMajority(majorityRole)) {
         if (majorityRole.fold(isLeader)(isRoleLeaderOf)) {
           probe ! DownCalled(node)
+          self ! MemberDowned(member.copy(Down))
         } else {
           probe ! "down must only be done by quorum leader"
         }
