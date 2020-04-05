@@ -1,6 +1,6 @@
 val scala212Version = "2.12.8"
 val scala213Version = "2.13.1"
-val akkaVersion     = "2.6.4"
+val akkaVersion     = "2.6.3"
 
 lazy val root = (project in file("."))
   .settings(
@@ -8,17 +8,17 @@ lazy val root = (project in file("."))
     organization := "org.sisioh",
     organizationHomepage := Some(url("https://github.com/sisioh")),
     sonatypeProfileName := "org.sisioh",
-    scalaVersion := scala212Version,
+    scalaVersion := scala213Version,
     crossScalaVersions := scala212Version :: scala213Version :: Nil,
-    scalacOptions ++= Seq(
+    scalacOptions ++=
+      Seq(
         "-feature",
         "-deprecation",
         "-unchecked",
         "-encoding",
         "UTF-8",
-        "-language:implicitConversions",
-        "-language:postfixOps",
-        "-language:higherKinds"
+        "-language:_",
+        "-target:jvm-1.8"
       ),
     libraryDependencies ++= Seq(
         "com.typesafe.akka" %% "akka-actor"              % akkaVersion,
