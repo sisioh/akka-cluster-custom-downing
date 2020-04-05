@@ -59,6 +59,9 @@ jobs:
       - run:
           command: |
             sbt ++"2.12.10" test
+            rm -fr target/
+            rm -fr project/target/
+            rm -fr project/project/target/
             sbt ++"2.13.1" test
           no_output_timeout: 1h
       # Teardown
