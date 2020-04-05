@@ -10,7 +10,7 @@ import com.typesafe.config.Config
 import org.sisioh.akka.cluster.custom.downing.strategy.ClusterCustomDowning
 import org.sisioh.akka.cluster.custom.downing.strategy.roleLeaderRoles.RoleLeaderAutoDownRolesBase
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{ FiniteDuration, _ }
 
 final class RoleLeaderAutoDowningRoles(system: ActorSystem) extends DowningProvider {
