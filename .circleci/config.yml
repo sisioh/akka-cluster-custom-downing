@@ -1,9 +1,9 @@
 version: 2
 jobs:
-  branches:
-    ignore:
-      - master 
   build:
+    branches:
+      ignore:
+        - master 
     working_directory: ~/sisioh/akka-cluster-custom-downing
     parallelism: 1
     shell: /bin/bash --login
