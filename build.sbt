@@ -25,7 +25,7 @@ lazy val root = (project in file("."))
         //  "com.typesafe.akka" %% "akka-testkit" % akkaVersion  % "test" classifier "tests",
         "com.typesafe.akka" %% "akka-slf4j"     % akkaVersion % Test,
         "ch.qos.logback"    % "logback-classic" % "1.2.3"     % Test,
-        "org.scalatest"     %% "scalatest"      % "3.0.8"     % Test
+        "org.scalatest"     %% "scalatest"      % "3.1.1"     % Test
       ),
     compile in MultiJvm := (compile in MultiJvm).triggeredBy(compile in Test).value,
     parallelExecution in Test := false,
