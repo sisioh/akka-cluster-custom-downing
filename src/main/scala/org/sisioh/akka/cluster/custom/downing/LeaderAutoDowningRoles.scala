@@ -5,12 +5,12 @@
 package org.sisioh.akka.cluster.custom.downing
 
 import akka.actor.{ ActorSystem, Address, Props }
-import akka.cluster.{ Cluster, DowningProvider }
+import akka.cluster.DowningProvider
 import com.typesafe.config.Config
 import org.sisioh.akka.cluster.custom.downing.strategy.ClusterCustomDowning
 import org.sisioh.akka.cluster.custom.downing.strategy.leaderRoles.LeaderAutoDownRolesBase
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.{ FiniteDuration, _ }
 
 final class LeaderAutoDowningRoles(system: ActorSystem) extends DowningProvider {

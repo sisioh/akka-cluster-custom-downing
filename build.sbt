@@ -4,6 +4,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "akka-cluster-custom-downing",
     organization := "org.sisioh",
+    organizationHomepage := Some(url("https://github.com/j5ik2o")),
     sonatypeProfileName := "org.sisioh",
     scalaVersion := "2.13.1",
     crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.1"),
@@ -27,6 +28,13 @@ lazy val root = (project in file("."))
         "ch.qos.logback"    % "logback-classic" % "1.2.3"     % Test,
         "org.scalatest"     %% "scalatest"      % "3.0.8"     % Test
       ),
+    libraryDependencies ++= {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, n)) if n >= 13 => Nil
+        case _ =>
+          Seq("org.scala-lang.modules" %% "scala-collection-compat" % "2.1.4")
+      }
+    },
     compile in MultiJvm := (compile in MultiJvm).triggeredBy(compile in Test).value,
     parallelExecution in Test := false,
     executeTests in Test := Def.task {
@@ -58,40 +66,29 @@ lazy val root = (project in file("."))
     pomIncludeRepository := { _ =>
       false
     },
-    pomExtra := {
-      <url>https://github.com/sisioh/akka-cluster-custom-downing</url>
-        <licenses>
-          <license>
-            <name>Apache-2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
-          </license>
-        </licenses>
-        <scm>
-          <url>git@github.com:sisioh/akka-cluster-custom-downing.git</url>
-          <connection>scm:git:github.com/sisioh/akka-cluster-custom-downing</connection>
-          <developerConnection>scm:git:git@github.com:sisioh/akka-cluster-custom-downing.git</developerConnection>
-        </scm>
-        <developers>
-          <developer>
-            <id>j5ik2o</id>
-            <name>Junichi Kato</name>
-          </developer>
-        </developers>
-    },
-    publishTo in ThisBuild := sonatypePublishTo.value,
+    licenses := Seq(
+        "Apache-2.0" -> url("https://raw.githubusercontent.com/j5ik2o/akka-cluster-custom-downing/master/LICENSE")
+      ),
+    homepage := scmInfo.value map (_.browseUrl),
+    scmInfo := Some(
+        ScmInfo(
+          browseUrl = url("https://github.com/j5ik2o/akka-cluster-custom-downing"),
+          connection = "scm:git:git@github.com:j5ik2o/akka-cluster-custom-downing.git"
+        )
+      ),
+    developers := List(
+        Developer(
+          id = "j5ik2o",
+          name = "Junichi Kato",
+          email = "j5ik2o@gmail.com",
+          url = url("https://blog.j5ik2o.me")
+        )
+      ),
+    publishTo := sonatypePublishToBundle.value,
     credentials := {
-      (
-        sys.env.get("CREDENTIALS_REALM"),
-        sys.env.get("CREDENTIALS_HOST"),
-        sys.env.get("CREDENTIALS_USER_NAME"),
-        sys.env.get("CREDENTIALS_PASSWORD")
-      ) match {
-        case (Some(r), Some(h), Some(u), Some(p)) =>
-          Credentials(r, h, u, p) :: Nil
-        case _ =>
-          val ivyCredentials = (baseDirectory in LocalRootProject).value / ".credentials"
-          Credentials(ivyCredentials) :: Nil
-      }
+      val ivyCredentials = (baseDirectory in LocalRootProject).value / ".credentials"
+      val gpgCredentials = (baseDirectory in LocalRootProject).value / ".gpgCredentials"
+      Credentials(ivyCredentials) :: Credentials(gpgCredentials) :: Nil
     }
   )
   .configs(MultiJvm)
