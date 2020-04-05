@@ -1,32 +1,33 @@
-val akkaVersion = "2.5.30"
+val scala212Version = "2.12.10"
+val scala213Version = "2.13.1"
+val akkaVersion     = "2.6.3"
 
 lazy val root = (project in file("."))
   .settings(
     name := "akka-cluster-custom-downing",
     organization := "org.sisioh",
-    organizationHomepage := Some(url("https://github.com/j5ik2o")),
+    organizationHomepage := Some(url("https://github.com/sisioh")),
     sonatypeProfileName := "org.sisioh",
-    scalaVersion := "2.13.1",
-    crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.1"),
-    scalacOptions ++= Seq(
+    scalaVersion := scala213Version,
+    crossScalaVersions := scala212Version :: scala213Version :: Nil,
+    scalacOptions ++=
+      Seq(
         "-feature",
         "-deprecation",
         "-unchecked",
         "-encoding",
         "UTF-8",
-        "-language:implicitConversions",
-        "-language:postfixOps",
-        "-language:higherKinds"
+        "-language:_",
+        "-target:jvm-1.8"
       ),
     libraryDependencies ++= Seq(
-        "com.typesafe.akka" %% "akka-actor"   % akkaVersion,
-        "com.typesafe.akka" %% "akka-cluster" % akkaVersion,
-        //  "com.typesafe.akka" %% "akka-cluster" % akkaVersion  % "test" classifier "tests",
+        "com.typesafe.akka" %% "akka-actor"              % akkaVersion,
+        "com.typesafe.akka" %% "akka-cluster"            % akkaVersion,
         "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaVersion % Test,
-        //  "com.typesafe.akka" %% "akka-testkit" % akkaVersion  % "test" classifier "tests",
-        "com.typesafe.akka" %% "akka-slf4j"     % akkaVersion % Test,
-        "ch.qos.logback"    % "logback-classic" % "1.2.3"     % Test,
-        "org.scalatest"     %% "scalatest"      % "3.0.8"     % Test
+        "com.typesafe.akka" %% "akka-slf4j"              % akkaVersion % Test,
+        "ch.qos.logback"    % "logback-classic"          % "1.2.3" % Test,
+        "org.scalatest"     %% "scalatest"               % "3.1.1" % Test,
+        "org.scalactic"     %% "scalactic"               % "3.1.1" % Test
       ),
     libraryDependencies ++= {
       CrossVersion.partialVersion(scalaVersion.value) match {
