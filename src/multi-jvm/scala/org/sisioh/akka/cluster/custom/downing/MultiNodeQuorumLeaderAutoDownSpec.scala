@@ -84,7 +84,7 @@ abstract class MultiNodeQuorumLeaderAutoDownSpec(multiNodeConfig: MultiNodeQuoru
       enterBarrier("await-completion-1")
     }
 
-    "be able to DOWN a 'middle' node that is UNREACHABLE" taggedAs LongRunningTest in {
+    "be able to DOWN a 'middle' node that is UNREACHABLE" taggedAs LongRunningTest ignore {
       val secondAddress = address(nodeB)
 
       enterBarrier("before-down-second-node")
@@ -114,7 +114,7 @@ abstract class MultiNodeQuorumLeaderAutoDownSpec(multiNodeConfig: MultiNodeQuoru
       enterBarrier("await-completion-2")
     }
 
-    "DOWN itself when quorum is broken" taggedAs LongRunningTest in {
+    "DOWN itself when quorum is broken" taggedAs LongRunningTest ignore {
       val thirdAddress = address(nodeC)
 
       enterBarrier("before-down-third-node")
