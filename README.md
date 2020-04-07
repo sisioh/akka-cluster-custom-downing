@@ -1,5 +1,5 @@
 #  akka-cluster-custom-downing
-[![CircleCI](https://circleci.com/gh/sisioh/akka-cluster-custom-downing.svg?style=svg)](https://circleci.com/gh/sisioh/akka-cluster-custom-downing)
+[![CircleCI](https://circleci.com/gh/sisioh/akka-cluster-custom-downing.svg?style=shield)](https://circleci.com/gh/sisioh/akka-cluster-custom-downing)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.sisioh/akka-cluster-custom-downing_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.sisioh/akka-cluster-custom-downing_2.13)
 [![javadoc](https://javadoc.io/badge2/org.sisioh/akka-cluster-custom-downing_2.13/javadoc.svg)](https://javadoc.io/doc/org.sisioh/akka-cluster-custom-downing_2.13)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
