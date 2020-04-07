@@ -73,8 +73,8 @@ lazy val root = (project in file("."))
     homepage := scmInfo.value map (_.browseUrl),
     scmInfo := Some(
         ScmInfo(
-          browseUrl = url("https://github.com/j5ik2o/akka-cluster-custom-downing"),
-          connection = "scm:git:git@github.com:j5ik2o/akka-cluster-custom-downing.git"
+          browseUrl = url("https://github.com/sisioh/akka-cluster-custom-downing"),
+          connection = "scm:git:git@github.com:sisioh/akka-cluster-custom-downing.git"
         )
       ),
     developers := List(
