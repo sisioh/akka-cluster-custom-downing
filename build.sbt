@@ -68,7 +68,7 @@ lazy val root = (project in file("."))
       false
     },
     licenses := Seq(
-        "Apache-2.0" -> url("https://raw.githubusercontent.com/j5ik2o/akka-cluster-custom-downing/master/LICENSE")
+        "Apache-2.0" -> url("https://raw.githubusercontent.com/sisioh/akka-cluster-custom-downing/master/LICENSE")
       ),
     homepage := scmInfo.value map (_.browseUrl),
     scmInfo := Some(
