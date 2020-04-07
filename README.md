@@ -2,7 +2,7 @@
 [![CircleCI](https://circleci.com/gh/sisioh/akka-cluster-custom-downing.svg?style=svg)](https://circleci.com/gh/sisioh/akka-cluster-custom-downing)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.sisioh/akka-cluster-custom-downing_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.sisioh/akka-cluster-custom-downing_2.13)
 [![Scaladoc](http://javadoc-badge.appspot.com/org.sisioh/akka-cluster-custom-downing.svg?label=scaladoc)](http://javadoc-badge.appspot.com/org.sisioh/akka-cluster-custom-downing_2.13)
-[![Reference Status](https://www.versioneye.com/java/org.sisioh:akka-cluster-custom-downing_2.13/reference_badge.svg?style=flat)](https://www.versioneye.com/java/org.sisioh:akka-cluster-custom-downing_2.13/references)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 akka-cluster-custom-downing provides a configurable auto-downing strategy that you can choose based on your distributed application design.
 It lets you configure which nodes can be downed automatically and who is responsible to execute a downing action.
