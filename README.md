@@ -59,10 +59,10 @@ I hope to know how you use them.
 For sbt, add following lines to build.sbt.
 
 ```
-libraryDependencies += "org.sisioh" %% "akka-cluster-custom-downing" % "0.0.18"
+libraryDependencies += "org.sisioh" %% "akka-cluster-custom-downing" % "0.1.0"
 ```
 
-Scala 2.11, 2.12 and 2.13 are supported.
+Scala 2.12 and 2.13 are supported.
 
 ## Usage of split brain resolving strategy
 
