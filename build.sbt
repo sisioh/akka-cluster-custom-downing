@@ -33,7 +33,7 @@ lazy val root = (project in file("."))
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, n)) if n >= 13 => Nil
         case _ =>
-          Seq("org.scala-lang.modules" %% "scala-collection-compat" % "2.1.4")
+          Seq("org.scala-lang.modules" %% "scala-collection-compat" % "2.1.6")
       }
     },
     compile in MultiJvm := (compile in MultiJvm).triggeredBy(compile in Test).value,
