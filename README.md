@@ -105,7 +105,7 @@ If `role` is specified, the number of remaining members in the role is used to b
 
 ```scala
 
-akka.cluster.downing-provider-class = org.sisioh.akka.cluster.custom.downing.QuorumLeaderAutoDowningoDowning"
+akka.cluster.downing-provider-class = "org.sisioh.akka.cluster.custom.downing.QuorumLeaderAutoDowning"
 
 custom-downing {
   stable-after = 20s
@@ -128,7 +128,7 @@ If a role is set by `majority-member-role`, the strategy is only enforced to the
 
 ```scala
 
-akka.cluster.downing-provider-class = oorg.sisioh.akka.cluster.custom.downing.MajorityLeaderAutoDowningoDowning
+akka.cluster.downing-provider-class = "org.sisioh.akka.cluster.custom.downing.MajorityLeaderAutoDowning"
 
 custom-downing {
   stable-after = 20s
