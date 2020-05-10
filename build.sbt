@@ -26,7 +26,7 @@ lazy val root = (project in file("."))
         "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaVersion % Test,
         "com.typesafe.akka" %% "akka-slf4j"              % akkaVersion % Test,
         "ch.qos.logback"    % "logback-classic"          % "1.2.3" % Test,
-        "org.scalatest"     %% "scalatest"               % "3.1.1" % Test,
+        "org.scalatest"     %% "scalatest"               % "3.1.2" % Test,
         "org.scalactic"     %% "scalactic"               % "3.1.1" % Test
       ),
     libraryDependencies ++= {
