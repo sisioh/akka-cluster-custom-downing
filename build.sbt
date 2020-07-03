@@ -1,6 +1,6 @@
 val scala212Version = "2.12.10"
 val scala213Version = "2.13.1"
-val akkaVersion     = "2.6.4"
+val akkaVersion     = "2.6.6"
 
 lazy val root = (project in file("."))
   .settings(
@@ -26,8 +26,8 @@ lazy val root = (project in file("."))
         "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaVersion % Test,
         "com.typesafe.akka" %% "akka-slf4j"              % akkaVersion % Test,
         "ch.qos.logback"    % "logback-classic"          % "1.2.3" % Test,
-        "org.scalatest"     %% "scalatest"               % "3.1.1" % Test,
-        "org.scalactic"     %% "scalactic"               % "3.1.2" % Test
+        "org.scalatest"     %% "scalatest"               % "3.1.2" % Test,
+        "org.scalactic"     %% "scalactic"               % "3.1.1" % Test
       ),
     libraryDependencies ++= {
       CrossVersion.partialVersion(scalaVersion.value) match {
