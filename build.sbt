@@ -1,6 +1,6 @@
 val scala212Version = "2.12.10"
 val scala213Version = "2.13.1"
-val akkaVersion     = "2.6.6"
+val akkaVersion     = "2.6.10"
 
 lazy val root = (project in file("."))
   .settings(
