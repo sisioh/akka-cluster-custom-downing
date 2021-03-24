@@ -1,4 +1,4 @@
-val scala212Version = "2.12.10"
+val scala212Version = "2.12.13"
 val scala213Version = "2.13.1"
 val akkaVersion     = "2.6.6"
 
