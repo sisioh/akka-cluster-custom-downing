@@ -21,5 +21,5 @@ jobs:
         if: ${{ !github.event.repository.fork }}
         with:
           github-token: ${{ steps.generate_token.outputs.token }}
-          author-email: "82752207+sisioh-bot[bot]@users.noreply.github.com"
+          author-email: "82867271+sisioh-bot[bot]@users.noreply.github.com"
           author-name: "sisioh-bot[bot]"
