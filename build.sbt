@@ -101,3 +101,7 @@ lazy val root = (project in file("."))
   )
   .configs(MultiJvm)
   .enablePlugins(MultiJvmPlugin)
+
+// --- Custom commands
+addCommandAlias("lint", ";scalafmtCheck;test:scalafmtCheck;scalafmtSbtCheck;scalafixAll --check")
+addCommandAlias("fmt", ";scalafmtAll;scalafmtSbt")
