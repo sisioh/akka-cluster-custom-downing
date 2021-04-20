@@ -1,5 +1,4 @@
-/**
-  * Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
+/** Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
   * 2016- Modified by Yusuke Yasuda
   *
   * original source code is from
@@ -22,15 +21,16 @@ case class DownCalledBySecondaryOldest(address: Address)
 case object ShutDownCausedBySplitBrainResolver
 
 object OldestAutoDownRolesSpec {
-  val testRole    = Set("testRole", "dc-1")
-  val testRoleOpt = Some("testRole")
+  val testRole: Set[String]     = Set("testRole", "dc-1")
+  val testRoleOpt: Some[String] = Some("testRole")
 
-  val memberA = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, testRole)
-  val memberB = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, testRole)
-  val memberC = TestMember(Address("akka.tcp", "sys", "c", 2552), Up, testRole)
-  val memberD = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, Set("otherRole", "dc-1"))
+  val memberA: Member = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, testRole)
+  val memberB: Member = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, testRole)
+  val memberC: Member = TestMember(Address("akka.tcp", "sys", "c", 2552), Up, testRole)
+  val memberD: Member = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, Set("otherRole", "dc-1"))
 
-  val initialMembersByAge = immutable.SortedSet(memberA, memberB, memberC, memberD)(Member.ageOrdering)
+  val initialMembersByAge: immutable.SortedSet[Member] =
+    immutable.SortedSet(memberA, memberB, memberC, memberD)(Member.ageOrdering)
 
   class OldestAutoDownTestActor(
       address: Address,
@@ -234,7 +234,7 @@ class OldestAutoDownRolesSpec extends AkkaSpec(ActorSystem("OldestAutoDownRolesS
     }
 
     "down self when oldest itself alone is unreachable if `donw-if-alone=true" in {
-      val oldest      = initialMembersByAge.head
+      initialMembersByAge.head
       val second      = initialMembersByAge.drop(1).head
       val third       = initialMembersByAge.drop(2).head
       val last        = initialMembersByAge.last

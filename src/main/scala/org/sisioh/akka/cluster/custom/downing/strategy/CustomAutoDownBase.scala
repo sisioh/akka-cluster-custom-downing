@@ -1,5 +1,4 @@
-/**
-  * Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
+/** Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
   *
   * 2016- Modified by Yusuke Yasuda
   * 2019- Modified by Junichi Kato
@@ -8,11 +7,11 @@
   */
 package org.sisioh.akka.cluster.custom.downing.strategy
 
-import akka.actor.{ Actor, Address, Cancellable, Scheduler }
+import akka.actor.{ Actor, Address, Scheduler }
 import akka.cluster.ClusterEvent._
 import akka.cluster.MemberStatus.{ Down, Exiting }
 import akka.cluster._
-import akka.event.{ Logging, LoggingAdapter }
+import akka.event.LoggingAdapter
 
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 

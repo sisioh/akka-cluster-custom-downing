@@ -1,5 +1,4 @@
-/**
-  * Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
+/** Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
   * 2016- Modified by Yusuke Yasuda
   *
   * original source code is from
@@ -19,14 +18,14 @@ import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.{ Duration, FiniteDuration, _ }
 
 object QuorumLeaderAutoDownSpec {
-  val memberRole         = Set("testRole", "dc-1")
-  val leaderRole: String = memberRole.head
+  val memberRole: Set[String] = Set("testRole", "dc-1")
+  val leaderRole: String      = memberRole.head
 
-  val memberA = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, memberRole)
-  val memberB = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, memberRole)
-  val memberC = TestMember(Address("akka.tcp", "sys", "c", 2552), Up, memberRole)
-  val memberD = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, memberRole)
-  val memberE = TestMember(Address("akka.tcp", "sys", "e", 2552), Up, memberRole)
+  val memberA: Member = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, memberRole)
+  val memberB: Member = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, memberRole)
+  val memberC: Member = TestMember(Address("akka.tcp", "sys", "c", 2552), Up, memberRole)
+  val memberD: Member = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, memberRole)
+  val memberE: Member = TestMember(Address("akka.tcp", "sys", "e", 2552), Up, memberRole)
 
   val initialMembersByAge: SortedSet[Member] =
     immutable.SortedSet(memberA, memberB, memberC, memberD, memberE)(Member.ageOrdering)

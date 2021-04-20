@@ -1,5 +1,4 @@
-/**
-  * Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
+/** Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
   *
   * 2016- Modified by Yusuke Yasuda
   * 2019- Modified by Junichi Kato
@@ -103,5 +102,4 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
     !unstableUnreachableMembers.contains(member))
   }
 
-  private def isKO(member: Member): Boolean = !isOK(member)
 }

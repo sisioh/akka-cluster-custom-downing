@@ -1,5 +1,4 @@
-/**
-  * Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
+/** Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
   * 2016- Modified by Yusuke Yasuda
   *
   * original source code is from
@@ -15,6 +14,7 @@ import akka.cluster.TestMember
 import org.sisioh.akka.cluster.custom.downing.strategy.leaderRoles.LeaderAutoDownRolesBase
 
 import scala.concurrent.duration.{ FiniteDuration, _ }
+import akka.cluster.Member
 
 case class DownCalled(node: Address)
 
@@ -23,10 +23,10 @@ object LeaderAutoDownRolesSpec {
   val memberRoles: Set[String] = Set("testRole", "dc-1")
   val testRoles: Set[String]   = Set("testRole")
 
-  val memberA = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, memberRoles)
-  val memberB = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, memberRoles)
-  val memberC = TestMember(Address("akka.tcp", "sys", "c", 2552), Up, memberRoles)
-  val memberD = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, Set("otherRole", "dc-1"))
+  val memberA: Member = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, memberRoles)
+  val memberB: Member = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, memberRoles)
+  val memberC: Member = TestMember(Address("akka.tcp", "sys", "c", 2552), Up, memberRoles)
+  val memberD: Member = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, Set("otherRole", "dc-1"))
 
   class LeaderAutoDownRolesTestActor(
       targetRoles: Set[String],

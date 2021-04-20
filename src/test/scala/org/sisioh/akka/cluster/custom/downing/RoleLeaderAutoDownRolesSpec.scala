@@ -1,5 +1,4 @@
-/**
-  * Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
+/** Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
   * 2016- Modified by Yusuke Yasuda
   *
   * original source code is from
@@ -15,22 +14,23 @@ import akka.cluster.TestMember
 import org.sisioh.akka.cluster.custom.downing.strategy.roleLeaderRoles.RoleLeaderAutoDownRolesBase
 
 import scala.concurrent.duration.{ FiniteDuration, _ }
+import akka.cluster.Member
 
 object RoleLeaderAutoDownRolesSpec {
 
-  val leaderRole     = "leaderRole"
-  val dataCenterRole = "dc-1"
-  val testRole       = "testRole"
-  val leaderRoles    = Set("leaderRole", dataCenterRole)
-  val testRoles      = Set(testRole, dataCenterRole)
+  val leaderRole               = "leaderRole"
+  val dataCenterRole           = "dc-1"
+  val testRole                 = "testRole"
+  val leaderRoles: Set[String] = Set("leaderRole", dataCenterRole)
+  val testRoles: Set[String]   = Set(testRole, dataCenterRole)
 
-  val roleLeaderA = TestMember(Address("akka.tcp", "sys", "la", 2552), Up, leaderRoles)
-  val roleLeaderB = TestMember(Address("akka.tcp", "sys", "lb", 2552), Up, leaderRoles)
-  val roleLeaderC = TestMember(Address("akka.tcp", "sys", "lc", 2552), Up, leaderRoles)
-  val memberA     = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, testRoles)
-  val memberB     = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, testRoles)
-  val memberC     = TestMember(Address("akka.tcp", "sys", "c", 2552), Up, testRoles)
-  val memberD     = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, Set("otherRole", dataCenterRole))
+  val roleLeaderA: Member = TestMember(Address("akka.tcp", "sys", "la", 2552), Up, leaderRoles)
+  val roleLeaderB: Member = TestMember(Address("akka.tcp", "sys", "lb", 2552), Up, leaderRoles)
+  val roleLeaderC: Member = TestMember(Address("akka.tcp", "sys", "lc", 2552), Up, leaderRoles)
+  val memberA: Member     = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, testRoles)
+  val memberB: Member     = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, testRoles)
+  val memberC: Member     = TestMember(Address("akka.tcp", "sys", "c", 2552), Up, testRoles)
+  val memberD: Member     = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, Set("otherRole", dataCenterRole))
 
   class RoleLeaderAutoDownRolesTestActor(
       leaderRole: String,

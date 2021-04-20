@@ -34,9 +34,9 @@ object Coroner {
   }
 
   private class WatchHandleImpl(startAndStopDuration: FiniteDuration) extends WatchHandle {
-    val cancelPromise = Promise[Boolean]()
-    val startedLatch  = new CountDownLatch(1)
-    val finishedLatch = new CountDownLatch(1)
+    val cancelPromise: Promise[Boolean] = Promise[Boolean]()
+    val startedLatch                    = new CountDownLatch(1)
+    val finishedLatch                   = new CountDownLatch(1)
 
     def waitForStart(): Unit = {
       startedLatch.await(startAndStopDuration.length, startAndStopDuration.unit)
@@ -65,7 +65,7 @@ object Coroner {
 
   }
 
-  val defaultStartAndStopDuration = 1.second
+  val defaultStartAndStopDuration: FiniteDuration = 1.second
 
   /** Ask the Coroner to print a report if it is not cancelled by the given deadline.
     * The returned handle can be used to perform the cancellation.

@@ -10,8 +10,8 @@ import org.scalatest.wordspec.AnyWordSpecLike
   */
 trait STMultiNodeSpec extends MultiNodeSpecCallbacks with AnyWordSpecLike with BeforeAndAfterAll {
 
-  override def beforeAll() = multiNodeSpecBeforeAll()
+  override def beforeAll(): Unit = multiNodeSpecBeforeAll()
 
-  override def afterAll() = multiNodeSpecAfterAll()
+  override def afterAll(): Unit = multiNodeSpecAfterAll()
 
 }

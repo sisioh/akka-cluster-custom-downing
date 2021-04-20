@@ -7,6 +7,7 @@ import scala.collection.immutable
 
 class SortedMembersByQuorum(values: immutable.SortedSet[Member]) extends SortedMembers(values, Member.ageOrdering) {
   override type This = SortedMembersByQuorum
+
   override protected def createInstance(values: immutable.SortedSet[Member]): SortedMembersByQuorum =
     new SortedMembersByQuorum(values)
 
