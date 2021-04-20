@@ -1,16 +1,14 @@
-/**
-  * Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
+/** Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
   */
 
 package akka.remote.testkit
 
-import org.scalatest.{ BeforeAndAfterAll, WordSpecLike }
-import org.scalatest.Matchers
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.wordspec.AnyWordSpecLike
 
-/**
-  * Hooks up MultiNodeSpec with ScalaTest
+/** Hooks up MultiNodeSpec with ScalaTest
   */
-trait STMultiNodeSpec extends MultiNodeSpecCallbacks with WordSpecLike with Matchers with BeforeAndAfterAll {
+trait STMultiNodeSpec extends MultiNodeSpecCallbacks with AnyWordSpecLike with BeforeAndAfterAll {
 
   override def beforeAll() = multiNodeSpecBeforeAll()
 

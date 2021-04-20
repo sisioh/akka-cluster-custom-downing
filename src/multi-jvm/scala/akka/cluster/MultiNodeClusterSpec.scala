@@ -1,35 +1,32 @@
-/**
-  * Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
+/** Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
   * 2016- Modified by Yusuke Yasuda
   */
 package akka.cluster
 
 // TODO remove metrics
 
-import language.implicitConversions
-import org.scalatest.{ Canceled, Outcome, Suite }
-import org.scalatest.exceptions.TestCanceledException
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
+import akka.actor.{ Actor, ActorRef, ActorSystem, Address, RootActorPath }
+import akka.event.Logging.ErrorLevel
+import akka.remote.DefaultFailureDetectorRegistry
 import akka.remote.testconductor.RoleName
 import akka.remote.testkit.{ MultiNodeSpec, STMultiNodeSpec }
-import akka.testkit._
 import akka.testkit.TestEvent._
-import akka.actor.{ ActorSystem, Address }
-import akka.event.Logging.ErrorLevel
-import scala.concurrent.duration._
-import scala.collection.immutable
+import akka.testkit._
+import com.typesafe.config.{ Config, ConfigFactory }
+import org.scalatest.exceptions.TestCanceledException
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.{ Canceled, Outcome, Suite }
+
 import java.util.concurrent.ConcurrentHashMap
-import akka.remote.DefaultFailureDetectorRegistry
-import akka.actor.ActorRef
-import akka.actor.Actor
-import akka.actor.RootActorPath
+import scala.concurrent.duration._
 
 object MultiNodeClusterSpec {
 
   def clusterConfigWithFailureDetectorPuppet: Config =
     ConfigFactory
-      .parseString("akka.cluster.failure-detector.implementation-class = akka.cluster.FailureDetectorPuppet").withFallback(
+      .parseString(
+        "akka.cluster.failure-detector.implementation-class = akka.cluster.FailureDetectorPuppet"
+      ).withFallback(
         clusterConfig
       )
 
@@ -83,7 +80,8 @@ object MultiNodeClusterSpec {
   }
 }
 
-trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoroner { self: MultiNodeSpec =>
+trait MultiNodeClusterSpec extends Suite with Matchers with STMultiNodeSpec with WatchedByCoroner {
+  self: MultiNodeSpec =>
 
   override def initialParticipants: Int = roles.size
 
@@ -148,8 +146,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     super.afterAll()
   }
 
-  /**
-    * Lookup the Address for the role.
+  /** Lookup the Address for the role.
     *
     * Implicit conversion from RoleName to Address.
     *
@@ -171,6 +168,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
   // it will most likely not be possible to run next step. This ensures
   // fail fast of steps after the first failure.
   private var failed = false
+
   override protected def withFixture(test: NoArgTest): Outcome =
     if (failed) {
       Canceled(new TestCanceledException("Previous step failed", 0))
@@ -183,13 +181,11 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
 
   def clusterView: ClusterReadView = cluster.readView
 
-  /**
-    * Get the cluster node to use.
+  /** Get the cluster node to use.
     */
   def cluster: Cluster = Cluster(system)
 
-  /**
-    * Use this method for the initial startup of the cluster node.
+  /** Use this method for the initial startup of the cluster node.
     */
   def startClusterNode(): Unit = {
     if (clusterView.members.isEmpty) {
@@ -199,8 +195,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
       clusterView.self
   }
 
-  /**
-    * Initialize the cluster of the specified member
+  /** Initialize the cluster of the specified member
     * nodes (roles) and wait until all joined and `Up`.
     * First node will be started first  and others will join
     * the first.
@@ -220,8 +215,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     enterBarrier(roles.map(_.name).mkString("-") + "-joined")
   }
 
-  /**
-    * Join the specific node within the given period by sending repeated join
+  /** Join the specific node within the given period by sending repeated join
     * requests at periodic intervals until we succeed.
     */
   def joinWithin(joinNode: RoleName, max: Duration = remainingOrDefault, interval: Duration = 1.second): Unit = {
@@ -233,8 +227,10 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     cluster join joinNode
     awaitCond(
       {
-        if (memberInState(joinNode, List(MemberStatus.up)) &&
-            memberInState(myself, List(MemberStatus.Joining, MemberStatus.Up)))
+        if (
+          memberInState(joinNode, List(MemberStatus.up)) &&
+          memberInState(myself, List(MemberStatus.Joining, MemberStatus.Up))
+        )
           true
         else {
           cluster join joinNode
@@ -246,8 +242,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     )
   }
 
-  /**
-    * Assert that the member addresses match the expected addresses in the
+  /** Assert that the member addresses match the expected addresses in the
     * sort order used by the cluster.
     */
   def assertMembers(gotMembers: Iterable[Member], expectedAddresses: Address*): Unit = {
@@ -257,8 +252,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     expectedAddresses.sorted.zipWithIndex.foreach { case (a, i) => members(i).address should ===(a) }
   }
 
-  /**
-    * Note that this can only be used for a cluster with all members
+  /** Note that this can only be used for a cluster with all members
     * in Up status, i.e. use `awaitMembersUp` before using this method.
     * The reason for that is that the cluster leader is preferably a
     * member with status Up or Leaving and that information can't
@@ -267,8 +261,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
   def assertLeader(nodesInCluster: RoleName*): Unit =
     if (nodesInCluster.contains(myself)) assertLeaderIn(nodesInCluster)
 
-  /**
-    * Assert that the cluster has elected the correct leader
+  /** Assert that the cluster has elected the correct leader
     * out of all nodes in the cluster. First
     * member in the cluster ring is expected leader.
     *
@@ -280,7 +273,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     */
   def assertLeaderIn(nodesInCluster: Seq[RoleName]): Unit =
     if (nodesInCluster.contains(myself)) {
-      nodesInCluster.length should not be (0)
+      nodesInCluster.length should not be 0
       val expectedLeader = roleOfLeader(nodesInCluster)
       val leader         = clusterView.leader
       val isLeader       = leader.contains(clusterView.selfAddress)
@@ -291,8 +284,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
       clusterView.status should (be(MemberStatus.Up) or be(MemberStatus.Leaving))
     }
 
-  /**
-    * Wait until the expected number of members has status Up has been reached.
+  /** Wait until the expected number of members has status Up has been reached.
     * Also asserts that nodes in the 'canNotBePartOfMemberRing' are *not* part of the cluster ring.
     */
   def awaitMembersUp(
@@ -302,7 +294,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
   ): Unit = {
     within(timeout) {
       if (canNotBePartOfMemberRing.nonEmpty) // don't run this on an empty set
-        awaitAssert(canNotBePartOfMemberRing foreach (a => clusterView.members.map(_.address) should not contain (a)))
+        awaitAssert(canNotBePartOfMemberRing foreach (a => clusterView.members.map(_.address) should not contain a))
       awaitAssert(clusterView.members.size should ===(numberOfMembers))
       awaitAssert(clusterView.members.toList.map(_.status).toSet should ===(Set(MemberStatus.Up)))
       // clusterView.leader is updated by LeaderChanged, await that to be updated also
@@ -311,8 +303,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     }
   }
 
-  /**
-    * check members are stay unreachable for specified duration
+  /** check members are stay unreachable for specified duration
     */
   def remainMembersUnreachable(
       numberOfMembers: Int,
@@ -335,14 +326,12 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
   def awaitAllReachable(): Unit =
     awaitAssert(clusterView.unreachableMembers should ===(Set.empty))
 
-  /**
-    * Wait until the specified nodes have seen the same gossip overview.
+  /** Wait until the specified nodes have seen the same gossip overview.
     */
   def awaitSeenSameState(addresses: Address*): Unit =
     awaitAssert((addresses.toSet diff clusterView.seenBy) should ===(Set.empty))
 
-  /**
-    * Leader according to the address ordering of the roles.
+  /** Leader according to the address ordering of the roles.
     * Note that this can only be used for a cluster with all members
     * in Up status, i.e. use `awaitMembersUp` before using this method.
     * The reason for that is that the cluster leader is preferably a
@@ -350,12 +339,11 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     * be determined from the `RoleName`.
     */
   def roleOfLeader(nodesInCluster: Seq[RoleName] = roles): RoleName = {
-    nodesInCluster.length should not be (0)
+    nodesInCluster.length should not be 0
     nodesInCluster.min
   }
 
-  /**
-    * Sort the roles in the address order used by the cluster node ring.
+  /** Sort the roles in the address order used by the cluster node ring.
     */
   implicit val clusterOrdering: Ordering[RoleName] = new Ordering[RoleName] {
     import Member.addressOrdering
@@ -364,16 +352,14 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
 
   def roleName(addr: Address): Option[RoleName] = roles.find(address(_) == addr)
 
-  /**
-    * Marks a node as available in the failure detector if
+  /** Marks a node as available in the failure detector if
     * [[akka.cluster.FailureDetectorPuppet]] is used as
     * failure detector.
     */
   def markNodeAsAvailable(address: Address): Unit =
     failureDetectorPuppet(address) foreach (_.markNodeAsAvailable())
 
-  /**
-    * Marks a node as unavailable in the failure detector if
+  /** Marks a node as unavailable in the failure detector if
     * [[akka.cluster.FailureDetectorPuppet]] is used as
     * failure detector.
     */

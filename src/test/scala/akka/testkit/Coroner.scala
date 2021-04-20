@@ -1,5 +1,4 @@
-/**
-  * Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
+/** Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
   */
 package akka.testkit
 
@@ -7,12 +6,11 @@ import java.io.PrintStream
 import java.lang.management.{ ManagementFactory, ThreadInfo }
 import java.util.Date
 import java.util.concurrent.{ CountDownLatch, TimeoutException }
-import scala.concurrent.{ Await, Awaitable, CanAwait, Promise }
 import scala.concurrent.duration._
+import scala.concurrent.{ Await, Awaitable, CanAwait, Promise }
 import scala.util.control.NonFatal
 
-/**
-  * The Coroner can be used to print a diagnostic report of the JVM state,
+/** The Coroner can be used to print a diagnostic report of the JVM state,
   * including stack traces and deadlocks. A report can be printed directly, by
   * calling `printReport`. Alternatively, the Coroner can be asked to `watch`
   * the JVM and generate a report at a later time - unless the Coroner is cancelled
@@ -25,20 +23,18 @@ import scala.util.control.NonFatal
   */
 object Coroner {
 
-  /**
-    * Used to cancel the Coroner after calling `watch`.
+  /** Used to cancel the Coroner after calling `watch`.
     * The result of this Awaitable will be `true` if it has been cancelled.
     */
   trait WatchHandle extends Awaitable[Boolean] {
 
-    /**
-      * Will try to ensure that the Coroner has finished reporting.
+    /** Will try to ensure that the Coroner has finished reporting.
       */
     def cancel(): Unit
   }
 
   private class WatchHandleImpl(startAndStopDuration: FiniteDuration) extends WatchHandle {
-    val cancelPromise = Promise[Boolean]
+    val cancelPromise = Promise[Boolean]()
     val startedLatch  = new CountDownLatch(1)
     val finishedLatch = new CountDownLatch(1)
 
@@ -71,8 +67,7 @@ object Coroner {
 
   val defaultStartAndStopDuration = 1.second
 
-  /**
-    * Ask the Coroner to print a report if it is not cancelled by the given deadline.
+  /** Ask the Coroner to print a report if it is not cancelled by the given deadline.
     * The returned handle can be used to perform the cancellation.
     *
     * If displayThreadCounts is set to true, then the Coroner will print thread counts during start
@@ -124,8 +119,7 @@ object Coroner {
     watchedHandle
   }
 
-  /**
-    * Print a report containing diagnostic information.
+  /** Print a report containing diagnostic information.
     */
   def printReport(reportTitle: String, out: PrintStream): Unit = {
     import out.println
@@ -243,8 +237,7 @@ object Coroner {
 
 }
 
-/**
-  * Mixin for tests that should be watched by the Coroner. The `startCoroner`
+/** Mixin for tests that should be watched by the Coroner. The `startCoroner`
   * and `stopCoroner` methods should be called before and after the test runs.
   * The Coroner will display its report if the test takes longer than the
   * (dilated) `expectedTestDuration` to run.
