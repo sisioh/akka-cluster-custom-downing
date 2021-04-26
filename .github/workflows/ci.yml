@@ -9,6 +9,7 @@ on:
       - '**.java'
       - '**.sbt'
       - '.scalafmt.conf'
+      - 'project/build.properties'
       - '.github/workflows/ci.yml'
   pull_request:
     branches:
@@ -18,6 +19,7 @@ on:
       - '**.java'
       - '**.sbt'
       - '.scalafmt.conf'
+      - 'project/build.properties'
       - '.github/workflows/ci.yml'
   schedule:
     - cron: '0 * * * *'
@@ -74,14 +76,10 @@ jobs:
         with:
           app_id: 111353
           private_key: ${{ secrets.BOT_PRIVATE_KEY }}
-      - name: labeler
-        uses: actions/labeler@v3
-        with:
-          repo-token: "${{ steps.generate_token.outputs.token }}"
       - name: automerge
         uses: pascalgn/automerge-action@v0.13.1
         env:
           GITHUB_TOKEN: "${{ steps.generate_token.outputs.token }}"
-          MERGE_LABELS: "automerge"
+          MERGE_LABELS: ""
           MERGE_METHOD: "rebase"
           MERGE_FILTER_AUTHOR: "sisioh-bot[bot]"
