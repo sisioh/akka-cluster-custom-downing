@@ -15,7 +15,7 @@ jobs:
     - name: Calculate changes from the latest tag to HEAD
       id: changes
       run: |
-        LATEST_TAG=$(git describe --abbrev=0)
+        LATEST_TAG=$(git describe --abbrev=0 )
         echo "latest-tag = $LATEST_TAG"
         COUNT=$(git log $LATEST_TAG..HEAD --pretty=format:"%s" --no-merges \
           --grep='^build:' \
