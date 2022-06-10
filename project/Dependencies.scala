@@ -4,7 +4,7 @@ object Dependencies {
 
   object Versions {
     val scala211Version = "2.11.12"
-    val scala212Version = "2.12.15"
+    val scala212Version = "2.12.16"
     val scala213Version = "2.13.5"
 
     val scalaCollectionCompatVersion = "2.4.3"
